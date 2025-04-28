@@ -9,7 +9,13 @@ from validation import validar_links_de_dados
 from downloader import baixar_arquivo
 from analyzer import analisar_dataset
 
-st.set_page_config(page_title="Data Hunter 5.0 Alpha", layout="wide")
+# --- Configuração da página
+st.set_page_config(
+    page_title="Data Hunter 5.0 Alpha",
+    page_icon="🔎",  # Agora com emoji de lupa como favicon!
+    layout="wide"
+)
+
 st.title("🔎 Data Hunter 5.0 Alpha")
 st.write("Busca inteligente e análise automática de datasets públicos!")
 
