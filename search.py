@@ -1,15 +1,26 @@
 # search.py
 import requests
 from duckduckgo_search import DDGS
-from bs4 import BeautifulSoup
 
-def buscar_paginas(query, max_results=20):
-    fontes_preferidas = ['data.gov', 'dados.gov', 'kaggle.com', '.gov', '.edu']
+def buscar_paginas(query, max_results=30):
+    """Realiza busca inteligente, tentando várias variantes da consulta."""
+    variantes = [
+        query,
+        f"{query} site:.gov.br",
+        f"{query} site:.gov",
+        f"{query} filetype:csv OR filetype:xlsx OR filetype:json",
+        f"{query} dataset",
+        f"{query} download dados"
+    ]
+
+    fontes_preferidas = ['data.gov', 'dados.gov', 'gov.br', '.gov', '.edu', 'kaggle.com']
     links_priorizados = []
     outros_links = []
 
     with DDGS() as ddgs:
-        resultados = ddgs.text(f"{query} filetype:csv OR filetype:xlsx OR filetype:json OR filetype:zip", max_results=max_results)
+        resultados = []
+        for variante in variantes:
+            resultados += ddgs.text(variante, max_results=max_results)
 
     for resultado in resultados:
         url = resultado.get('href', '')
@@ -18,4 +29,6 @@ def buscar_paginas(query, max_results=20):
         else:
             outros_links.append(url)
 
-    return links_priorizados + outros_links
+    # Remover duplicados mantendo prioridade
+    links_final = list(dict.fromkeys(links_priorizados + outros_links))
+    return links_final
