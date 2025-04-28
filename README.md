@@ -2,10 +2,9 @@
   <img src="logo.png" alt="Data Hunter 5.0 Alpha Logo" width="400">
 </p>
 
-<h1 align="center">🔎 Data Hunter 5.0 Alpha</h1>
+<h1 align="center">🔎       Data Hunter 5.0 Alpha</h1>
 <p align="center">
 Busca Inteligente e Análise Automatizada de Datasets Públicos.<br>
-Minimalista • Clean • Inspirado em Apple/Mac Design
 </p>
 
 <p align="center">
