@@ -7,3 +7,5 @@ beautifulsoup4
 requests
 tqdm
 plotly
+selenium
+webdriver-manager
