@@ -5,13 +5,13 @@ from bs4 import BeautifulSoup
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
 
 def validar_links_de_dados(pagina_url):
-    """Busca links e botões plausíveis para download de dados."""
+    """Busca links, botões e possíveis downloads dentro da página."""
     links_dados = []
-    palavras_chave = ['download', 'dataset', 'csv', 'excel', 'dados', 'arquivo', 'exportar']
+    palavras_chave = ['download', 'dataset', 'csv', 'excel', 'dados', 'arquivo', 'exportar', 'planilha']
 
     try:
         resposta = requests.get(pagina_url, timeout=15)
@@ -20,32 +20,32 @@ def validar_links_de_dados(pagina_url):
 
         soup = BeautifulSoup(resposta.content, 'html.parser')
 
-        # 🔵 Procurar <a href>
+        # 🔵 Buscar links
         for a_tag in soup.find_all('a', href=True):
             href = a_tag['href']
-            texto_link = (a_tag.get_text() or '').lower()
+            texto = (a_tag.get_text() or '').lower()
 
-            if any(palavra in href.lower() for palavra in palavras_chave) or any(palavra in texto_link for palavra in palavras_chave):
-                if any(href.lower().endswith(ext) for ext in ('.csv', '.xlsx', '.json', '.zip')):
+            if any(palavra in href.lower() for palavra in palavras_chave) or any(palavra in texto for palavra in palavras_chave):
+                if any(href.lower().endswith(ext) for ext in ['.csv', '.xlsx', '.json', '.zip']):
                     if href.startswith('/'):
                         href = pagina_url.rstrip('/') + href
                     links_dados.append(href)
 
-        # 🔵 Procurar botões que podem ser downloads
+        # 🔵 Buscar botões de download
         for button in soup.find_all('button'):
             texto = (button.get_text() or '').lower()
             if any(palavra in texto for palavra in palavras_chave):
-                links_dados.append(pagina_url)  # fallback: tentamos baixar a própria página
+                links_dados.append(pagina_url)  # Pode ser necessário renderizar com Selenium depois
 
     except Exception as e:
         print(f"Erro validando {pagina_url}: {e}")
 
-    return list(set(links_dados))  # Remover duplicados
+    return list(set(links_dados))  # Remove duplicados
 
 def extrair_tabelas_html(pagina_url):
-    """Tenta extrair tabelas HTML padrão. Se falhar, usa Selenium para capturar dinamicamente."""
+    """Tenta extrair tabelas HTML visíveis; se falhar, usa Selenium para capturar."""
     try:
-        # Primeiro tenta modo simples (pandas)
+        # Primeiro tenta pandas
         dfs = pd.read_html(pagina_url)
         tabelas_validas = [df for df in dfs if df.shape[0] > 10 and df.shape[1] > 3]
         if tabelas_validas:
@@ -53,7 +53,7 @@ def extrair_tabelas_html(pagina_url):
     except Exception as e:
         print(f"Pandas não conseguiu extrair: {e}")
 
-    # Se não conseguir, usar Selenium
+    # Se pandas falhar, usar Selenium
     try:
         options = Options()
         options.headless = True
