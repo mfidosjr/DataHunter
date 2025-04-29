@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="logo.png" alt="Data Hunter 5.0 Alpha Logo" width="400">
+  <img src="logo.png" alt="Data Hunter Logo" width="400">
 </p>
 
-<h1 align="center">🔎       Data Hunter 5.0 Alpha</h1>
+<h1 align="center">🔎 Data Hunter 5.2 Alpha</h1>
 <p align="center">
 Busca Inteligente e Análise Automatizada de Datasets Públicos.<br>
 </p>
@@ -19,34 +19,45 @@ Busca Inteligente e Análise Automatizada de Datasets Públicos.<br>
 ---
 
 # 📦 Funcionalidades
-- 🔍 Busca fontes confiáveis (.gov, .edu, Kaggle)
-- 🛡️ Validação semântica dos links
-- 💾 Download robusto
-- 📊 Análise automática
-- 📈 Ranking interativo
-- 📥 Download zipado dos datasets encontrados
+
+- 🔍 Busca fontes confiáveis (.gov, .edu, Kaggle, entre outros)
+- 🛡️ Validação avançada de links, botões e tabelas HTML
+- 🧠 Detecção de APIs JSON ocultas (XHR)
+- 💾 Download robusto e descompactação de arquivos ZIP
+- 📊 Análise automática de datasets (linhas, colunas, tipos, nulos)
+- 🧩 Análise semântica baseada em nomes de colunas
+- 📈 Ranking interativo dos datasets obtidos
+- 📥 Download zipado de todos os datasets encontrados
 
 ---
 
 # 🚀 Como Rodar Localmente
 
 ```bash
+# Instale as dependências
 pip install -r requirements.txt
-streamlit run app.py
-```
 
----
+# Rode o aplicativo
+streamlit run app.py
 
 # 🌎 Deploy Online
 
-Streamlit Community Cloud
+O Data Hunter foi desenvolvido para fácil deploy no Streamlit Community Cloud.
+
+Para implantar:
+	1.	Faça fork/clonagem deste repositório.
+	2.	No Streamlit Cloud, crie um novo app apontando para o arquivo app.py.
+	3.	Certifique-se que o requirements.txt está correto e atualizado.
 
 ---
 
 # 📚 Tecnologias
 
-- Python 3.10+
-- Streamlit
-- BeautifulSoup4
-- DuckDuckGo Search
-- Plotly
+	•	Python 3.10+
+	•	Streamlit
+	•	DuckDuckGo Search API
+	•	BeautifulSoup4
+	•	Selenium + WebDriver Manager
+	•	Requests
+	•	Pandas
+	•	Plotly
