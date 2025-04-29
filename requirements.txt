@@ -1,5 +1,5 @@
 beautifulsoup4==4.12.3        # Parser HTML para validação
-duckduckgo-search==0.8.4      # Busca na web (nome do pacote no PyPI)
+duckduckgo_search==0.8.4      # Busca na web (nome do pacote no PyPI)
 lxml==4.9.3                  # Parsing HTML/XML rápido (opcional, melhora BeautifulSoup)
 openpyxl==3.1.2               # Suporte a arquivos .xlsx
 pandas==2.2.2                 # Análise de dados
@@ -7,4 +7,4 @@ plotly==5.21.0                # Gráficos interativos
 requests==2.31.0              # Requisições HTTP
 selenium==4.20.0              # Automação de navegador
 streamlit==1.34.0             # Framework do app
-webdriver-manager==4.0.1      # Gerenciador automático de drivers Selenium
+webdriver_manager==4.0.1      # Gerenciador automático de drivers Selenium
