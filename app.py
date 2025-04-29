@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import zipfile
 import plotly.express as px
+import time
 
 from search import buscar_paginas
 from validation import validar_links_de_dados, extrair_tabelas_html
@@ -27,10 +28,12 @@ consulta = st.text_input("Digite o tema da busca (ex: qualidade da água no Bras
 buscar = st.button("Buscar e Analisar Dados")
 
 if buscar and consulta:
+    tempo_inicio = time.time()
+
     with st.spinner('🔍 Buscando páginas relevantes...'):
         paginas_encontradas = buscar_paginas(consulta)
 
-    st.success(f"{len(paginas_encontradas)} páginas encontradas.")
+    st.success(f"✅ {len(paginas_encontradas)} páginas encontradas.")
     st.divider()
 
     datasets_encontrados = []
@@ -40,7 +43,7 @@ if buscar and consulta:
             datasets_encontrados.extend(links_validos)
 
     datasets_encontrados = list(set(datasets_encontrados))
-    st.success(f"{len(datasets_encontrados)} links de datasets encontrados.")
+    st.success(f"✅ {len(datasets_encontrados)} links de datasets encontrados.")
     st.divider()
 
     arquivos_baixados = []
@@ -52,17 +55,17 @@ if buscar and consulta:
                 if caminho:
                     arquivos_baixados.append(caminho)
     else:
-        st.warning('Nenhum link direto encontrado. Tentando extrair tabelas HTML...')
-        for pagina in paginas_encontradas:
+        st.info('ℹ️ Nenhum link direto encontrado. Tentando extrair tabelas HTML...')
+        for idx_pag, pagina in enumerate(paginas_encontradas):
             tabelas = extrair_tabelas_html(pagina)
-            for idx, tabela in enumerate(tabelas):
+            for idx_tab, tabela in enumerate(tabelas):
                 os.makedirs('datasets', exist_ok=True)
-                caminho = f"datasets/tabela_extraida_{idx}.csv"
+                caminho = f"datasets/pagina{idx_pag}_tabela{idx_tab}.csv"
                 tabela.to_csv(caminho, index=False)
                 arquivos_baixados.append(caminho)
 
         if not arquivos_baixados:
-            st.warning('Tentando detectar APIs JSON como fallback...')
+            st.info('ℹ️ Tentando detectar APIs JSON como fallback...')
             for pagina in paginas_encontradas:
                 apis = detectar_apis_na_pagina(pagina)
                 for idx, api_url in enumerate(apis):
@@ -73,7 +76,7 @@ if buscar and consulta:
     if not arquivos_baixados:
         st.error("⚠️ Nenhum dataset útil foi encontrado após todos os métodos.")
     else:
-        st.success(f"{len(arquivos_baixados)} datasets obtidos!")
+        st.success(f"✅ {len(arquivos_baixados)} datasets obtidos!")
         st.divider()
 
         resumos = []
@@ -82,13 +85,16 @@ if buscar and consulta:
                 resumo = analisar_dataset(caminho)
                 if resumo:
                     # Análise semântica adicional
-                    df = pd.read_csv(caminho, encoding='utf-8', low_memory=False)
-                    resumo['analise_semantica'] = gerar_resumo_semantico(df.columns)
+                    try:
+                        df = pd.read_csv(caminho, encoding='utf-8', low_memory=False)
+                        resumo['analise_semantica'] = gerar_resumo_semantico(df.columns)
+                    except Exception as e:
+                        resumo['analise_semantica'] = "Erro na leitura para análise semântica"
                     resumos.append(resumo)
 
         if resumos:
             df_resultados = pd.DataFrame(resumos).sort_values(by='pontuacao', ascending=False)
-            st.success(f"{len(resumos)} datasets analisados com sucesso!")
+            st.success(f"✅ {len(resumos)} datasets analisados com sucesso!")
 
             st.dataframe(df_resultados[['arquivo', 'linhas', 'colunas', '%_nulos', 'pontuacao', 'analise_semantica']])
 
@@ -104,6 +110,10 @@ if buscar and consulta:
                 st.download_button("📦 Download de Todos os Datasets", f, file_name="datasets_baixados.zip")
         else:
             st.warning("⚠️ Nenhum dataset útil foi encontrado após análise.")
+
+    tempo_fim = time.time()
+    duracao = tempo_fim - tempo_inicio
+    st.info(f"⏱️ Tempo total de execução: {duracao:.2f} segundos.")
 
 else:
     st.info("Digite um tema e clique no botão para iniciar.")
