@@ -1,45 +1,53 @@
-# analyzer.py
-import pandas as pd
+# downloader.py
 import os
+import requests
+import zipfile
+import time
+import re
 
-def analisar_dataset(filepath):
-    """Analisa o dataset: linhas, colunas, nulos, tipos de dados e score de qualidade."""
-    try:
-        # Detecta tipo de arquivo
-        if filepath.endswith('.csv'):
-            df = pd.read_csv(filepath, encoding='utf-8', low_memory=False)
-        elif filepath.endswith('.xlsx'):
-            df = pd.read_excel(filepath)
-        elif filepath.endswith('.json'):
-            df = pd.read_json(filepath)
-        else:
-            return None
-        
-        if df.shape[0] < 10 or df.shape[1] == 0:
-            return None
+def limpar_nome_arquivo(url):
+    """Limpa e extrai um nome de arquivo seguro da URL."""
+    nome = url.split("/")[-1].split("?")[0]
+    nome = re.sub(r'[^a-zA-Z0-9_\-.]', '_', nome)  # Só permite caracteres seguros
+    if not nome:
+        nome = "arquivo_baixado"
+    return nome
 
-        linhas = df.shape[0]
-        colunas = df.shape[1]
-        percentual_nulos = (df.isnull().sum().sum() / (linhas * colunas)) * 100
+def baixar_arquivo(url, destino_pasta='datasets', max_tentativas=2, timeout=15):
+    """Tenta baixar um arquivo de dados. Se for ZIP, descompacta automaticamente."""
+    os.makedirs(destino_pasta, exist_ok=True)
+    nome_arquivo = limpar_nome_arquivo(url)
+    caminho_arquivo = os.path.join(destino_pasta, nome_arquivo)
 
-        # 🔵 Nova parte: Inferência de tipo de dados
-        tipos = df.dtypes.value_counts().to_dict()
-        tipos_formatados = {str(k): int(v) for k, v in tipos.items()}
+    tentativas = 0
+    sucesso = False
 
-        # 🔵 Score de qualidade: baseado em quantidade de dados e poucos nulos
-        score = (linhas * 0.3) + (colunas * 0.5) - (percentual_nulos * 0.2)
+    while tentativas < max_tentativas and not sucesso:
+        try:
+            resposta = requests.get(url, stream=True, timeout=timeout)
+            if resposta.status_code == 200 and 'text/html' not in resposta.headers.get('Content-Type', ''):
+                with open(caminho_arquivo, 'wb') as f:
+                    for chunk in resposta.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+                sucesso = True
+            else:
+                tentativas += 1
+                time.sleep(2)
+        except Exception as e:
+            tentativas += 1
+            time.sleep(2)
 
-        resumo = {
-            'arquivo': os.path.basename(filepath),
-            'linhas': linhas,
-            'colunas': colunas,
-            '%_nulos': round(percentual_nulos, 2),
-            'tipos_detectados': tipos_formatados,
-            'pontuacao': round(score, 2),
-            'caminho': filepath
-        }
-        return resumo
-
-    except Exception as e:
-        print(f"Erro ao analisar {filepath}: {e}")
+    if not sucesso:
         return None
+
+    # Se for ZIP, descompacta
+    if caminho_arquivo.endswith('.zip'):
+        try:
+            with zipfile.ZipFile(caminho_arquivo, 'r') as zip_ref:
+                zip_ref.extractall(destino_pasta)
+            os.remove(caminho_arquivo)
+        except Exception as e:
+            print(f"Erro descompactando {nome_arquivo}: {e}")
+
+    return caminho_arquivo
