@@ -1,6 +1,6 @@
 beautifulsoup4==4.12.3        # Parser HTML para validação
 duckduckgo-search==0.8.4      # Busca na web (nome do pacote no PyPI)
-lxml==5.1.0                   # Parsing HTML/XML rápido (opcional, melhora BeautifulSoup)
+lxml==4.9.3                  # Parsing HTML/XML rápido (opcional, melhora BeautifulSoup)
 openpyxl==3.1.2               # Suporte a arquivos .xlsx
 pandas==2.2.2                 # Análise de dados
 plotly==5.21.0                # Gráficos interativos
