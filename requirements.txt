@@ -1,7 +1,7 @@
 groq
 python-dotenv
 beautifulsoup4
-duckduckgo-search
+ddgs
 lxml
 openpyxl
 pandas

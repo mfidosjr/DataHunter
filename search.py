@@ -1,5 +1,5 @@
 # search.py
-from duckduckgo_search import DDGS
+from ddgs import DDGS
 
 # 🔵 Variantes padrão de busca
 VARIANTES_QUERY = [
