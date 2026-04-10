@@ -13,6 +13,10 @@ webdriver-manager
 # New sources
 kaggle
 huggingface-hub
+# Scientific formats
+h5py
+xarray
+netCDF4
 # Robustness
 httpx
 tenacity

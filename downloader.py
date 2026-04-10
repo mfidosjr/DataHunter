@@ -49,6 +49,13 @@ def baixar_arquivo(url, destino_pasta='datasets', timeout=20):
         print(f"[downloader] Falha ao baixar {url}: {e}")
         return None
 
+    # Valida extensão suportada
+    EXTENSOES_SUPORTADAS = {'.csv', '.xlsx', '.json', '.zip', '.parquet', '.h5', '.hdf5', '.nc'}
+    ext = os.path.splitext(caminho_arquivo)[1].lower()
+    if ext not in EXTENSOES_SUPORTADAS:
+        os.remove(caminho_arquivo)
+        return None
+
     # Descompacta ZIP automaticamente
     if caminho_arquivo.endswith('.zip'):
         try:

@@ -4,7 +4,7 @@ import pytest
 import pandas as pd
 import tempfile
 
-from analyzer import _score_qualidade, _score_relevancia, analisar_dataset
+from analyzer import _score_qualidade, _score_relevancia_tokens as _score_relevancia, analisar_dataset
 
 
 class TestScoreQualidade:

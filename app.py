@@ -21,9 +21,11 @@ from api_detector import detectar_apis_na_pagina, baixar_dados_da_api
 from semantic_analyzer import gerar_resumo_semantico
 from kaggle_source import buscar_datasets_kaggle, baixar_dataset_kaggle
 from huggingface_source import buscar_datasets_hf, baixar_dataset_hf
+from zenodo_source import buscar_datasets_zenodo, baixar_datasets_zenodo
+from query_expander import expandir_query
 from history import save_search, list_searches, get_search, delete_search, clear_history
 
-VERSION = "6.2"
+VERSION = "6.3"
 UPDATED = "2026-04-10"
 
 SYSTEM_PROMPT = """Você é um assistente especializado em encontrar bases de dados para projetos de analytics e pesquisa em IA.
@@ -117,16 +119,26 @@ def _card_dataset(resumo: dict, idx: int):
             )
 
 
-def _executar_busca(keywords: list, fontes: dict, formatos: list) -> list:
+def _executar_busca(keywords: list, fontes: dict, formatos: list, intencao: str = "") -> list:
     """Executa o pipeline completo e retorna lista de resumos analisados."""
-    query = " ".join(keywords)
+
+    # --- Expansão de query
+    with st.status("🧠 Expandindo keywords com IA...", expanded=False) as s:
+        variantes = expandir_query(keywords, intencao)
+        s.update(label=f"🧠 {len(variantes)} variantes de busca geradas", state="complete")
+
+    query_principal = variantes[0]
     arquivos = []
-    resultados_container = st.empty()
+    # Mapa: caminho → metadata do dataset (título, descrição, fonte)
+    meta_map: dict[str, dict] = {}
 
     # --- Web
     if fontes.get("web"):
         with st.status("🌐 Buscando na web...", expanded=False) as s:
-            paginas = buscar_paginas(query)
+            paginas = []
+            for v in variantes[:3]:
+                paginas.extend(buscar_paginas(v))
+            paginas = list(dict.fromkeys(paginas))
             links = []
             for p in paginas:
                 links.extend(validar_links_de_dados(p))
@@ -138,6 +150,7 @@ def _executar_busca(keywords: list, fontes: dict, formatos: list) -> list:
                     c = baixar_arquivo(link)
                     if c:
                         arquivos.append(c)
+                        meta_map[c] = {"fonte": "web", "titulo": "", "descricao": ""}
             if not links:
                 for i, p in enumerate(paginas):
                     for j, t in enumerate(extrair_tabelas_html(p)):
@@ -145,46 +158,67 @@ def _executar_busca(keywords: list, fontes: dict, formatos: list) -> list:
                         c = f"datasets/pagina{i}_tabela{j}.csv"
                         t.to_csv(c, index=False)
                         arquivos.append(c)
+                        meta_map[c] = {"fonte": "web", "titulo": "", "descricao": ""}
 
     # --- Kaggle
     if fontes.get("kaggle"):
         with st.status("🏆 Buscando no Kaggle...", expanded=False) as s:
-            dss = buscar_datasets_kaggle(query, max_results=5)
+            dss = buscar_datasets_kaggle(query_principal, max_results=5)
             s.update(label=f"🏆 Kaggle — {len(dss)} datasets encontrados", state="complete")
             for ds in dss:
                 for f in baixar_dataset_kaggle(ds["ref"]):
                     arquivos.append(f)
+                    meta_map[f] = {"fonte": "kaggle", "titulo": ds.get("titulo", ""), "descricao": ""}
 
     # --- Hugging Face
     if fontes.get("hf"):
         with st.status("🤗 Buscando no Hugging Face...", expanded=False) as s:
-            dss = buscar_datasets_hf(query, max_results=5)
+            dss = buscar_datasets_hf(query_principal, max_results=5)
             s.update(label=f"🤗 Hugging Face — {len(dss)} datasets encontrados", state="complete")
             for ds in dss:
                 for f in baixar_dataset_hf(ds["ref"]):
                     arquivos.append(f)
+                    meta_map[f] = {"fonte": "huggingface", "titulo": ds.get("titulo", ""), "descricao": ""}
+
+    # --- Zenodo
+    if fontes.get("zenodo"):
+        with st.status("🔬 Buscando no Zenodo...", expanded=False) as s:
+            dss = buscar_datasets_zenodo(query_principal, max_results=8)
+            # Tenta variantes se não achou nada
+            if not dss and len(variantes) > 1:
+                dss = buscar_datasets_zenodo(variantes[1], max_results=8)
+            s.update(label=f"🔬 Zenodo — {len(dss)} datasets encontrados", state="complete")
+            for ds in dss:
+                for f in baixar_datasets_zenodo(ds):
+                    arquivos.append(f)
+                    meta_map[f] = {"fonte": "zenodo", "titulo": ds.get("titulo", ""), "descricao": ds.get("descricao", "")}
 
     if not arquivos:
         return []
 
-    # --- Análise
+    # --- Análise com scores estrutural + semântico IA
     resumos = []
     with st.status(f"📊 Analisando {len(arquivos)} arquivos...", expanded=False) as s:
         for caminho in arquivos:
-            resumo = analisar_dataset(caminho, query=query)
+            meta = meta_map.get(caminho, {})
+            resumo = analisar_dataset(
+                caminho,
+                query=query_principal,
+                titulo=meta.get("titulo", ""),
+                descricao=meta.get("descricao", ""),
+            )
             if resumo:
                 try:
                     df_tmp = ler_dataset(caminho)
-                    resumo["descricao"] = gerar_resumo_semantico(df_tmp.columns) if df_tmp is not None else "—"
-                    resumo["fonte"] = "kaggle" if "kaggle" in caminho.lower() else \
-                                      "huggingface" if "hugging" in caminho.lower() else "web"
+                    resumo["descricao"] = gerar_resumo_semantico(df_tmp.columns) if df_tmp is not None else meta.get("descricao", "—")
                 except Exception:
-                    resumo["descricao"] = "—"
-                    resumo["fonte"] = "web"
+                    resumo["descricao"] = meta.get("descricao", "—")
+                resumo["fonte"] = meta.get("fonte", "web")
                 resumos.append(resumo)
         s.update(label=f"📊 {len(resumos)} datasets analisados", state="complete")
 
-    return sorted(resumos, key=lambda x: x["relevancia"], reverse=True)
+    # Ordena por relevância IA (mais rica), com fallback para relevância por tokens
+    return sorted(resumos, key=lambda x: x.get("relevancia_ia", x["relevancia"]), reverse=True)
 
 
 # -------------------------------------------------------------------
@@ -336,10 +370,11 @@ if st.session_state.keywords_prontas:
         st.rerun()
 
     st.markdown("**Fontes de dados:**")
-    fc1, fc2, fc3 = st.columns(3)
-    usar_web     = fc1.checkbox("🌐 Web (DuckDuckGo)", value=True)
+    fc1, fc2, fc3, fc4 = st.columns(4)
+    usar_web     = fc1.checkbox("🌐 Web", value=True)
     usar_kaggle  = fc2.checkbox("🏆 Kaggle", value=True)
-    usar_hf      = fc3.checkbox("🤗 Hugging Face", value=True)
+    usar_hf      = fc3.checkbox("🤗 Hugging Face", value=False)
+    usar_zenodo  = fc4.checkbox("🔬 Zenodo", value=True)
 
     st.markdown("**Formatos aceitos:**")
     formatos = st.multiselect(
@@ -351,10 +386,13 @@ if st.session_state.keywords_prontas:
 
     st.markdown("")
     if st.button("🔍 Buscar e Analisar", type="primary", use_container_width=True):
-        fontes = {"web": usar_web, "kaggle": usar_kaggle, "hf": usar_hf}
+        fontes = {"web": usar_web, "kaggle": usar_kaggle, "hf": usar_hf, "zenodo": usar_zenodo}
         kws_ativas = list(keywords_editadas) if keywords_editadas else st.session_state.keywords
+        intencao_usuario = " ".join(
+            m["content"] for m in st.session_state.chat_messages if m["role"] == "user"
+        )
         with st.spinner(""):
-            st.session_state.resultados = _executar_busca(kws_ativas, fontes, list(formatos))
+            st.session_state.resultados = _executar_busca(kws_ativas, fontes, list(formatos), intencao_usuario)
         st.session_state.buscou = True
         st.session_state.search_saved = False
         st.rerun()
@@ -387,9 +425,9 @@ if st.session_state.buscou:
         # Gráfico comparativo
         df_res = pd.DataFrame(resumos)
         fig = px.bar(
-            df_res, x="arquivo", y=["qualidade", "relevancia"],
+            df_res, x="arquivo", y=["qualidade", "relevancia", "relevancia_ia"],
             barmode="group",
-            color_discrete_map={"qualidade": "#4C9BE8", "relevancia": "#2ECC71"},
+            color_discrete_map={"qualidade": "#4C9BE8", "relevancia": "#2ECC71", "relevancia_ia": "#9B59B6"},
             labels={"value": "Score (0–100)", "variable": "Dimensão"},
             height=280,
         )
