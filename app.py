@@ -6,6 +6,13 @@ import zipfile
 import plotly.express as px
 import time
 
+# Load .env if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 from search import buscar_paginas
 from validation import validar_links_de_dados, extrair_tabelas_html
 from downloader import baixar_arquivo
