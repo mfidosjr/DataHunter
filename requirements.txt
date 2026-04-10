@@ -10,3 +10,11 @@ requests
 selenium
 streamlit
 webdriver-manager
+# New sources
+kaggle
+huggingface-hub
+# Robustness
+httpx
+tenacity
+# Caching
+diskcache
