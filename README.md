@@ -2,7 +2,7 @@
   <img src="logo.png" alt="Data Hunter Logo" width="340"/>
 </p>
 
-<h1 align="center">Data Hunter</h1>
+<h1 align="center">Data Hunter <sub><sup>v6.0</sup></sub></h1>
 
 <p align="center">
   <strong>Vasculha a internet em busca de bases de dados para projetos de analytics e pesquisa em IA.</strong><br/>

@@ -29,8 +29,22 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🔎 Data Hunter")
-st.write("Vasculha a internet em busca de bases de dados para projetos de analytics e pesquisa em IA.")
+VERSION = "6.0"
+UPDATED = "2026-04-10"
+
+col_title, col_version = st.columns([6, 1])
+with col_title:
+    st.title("🔎 Data Hunter")
+    st.write("Vasculha a internet em busca de bases de dados para projetos de analytics e pesquisa em IA.")
+with col_version:
+    st.markdown(
+        f"""
+        <div style='text-align:right; padding-top:18px; color:#888; font-size:0.8rem; line-height:1.6'>
+            <strong>v{VERSION}</strong><br>{UPDATED}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # --- Entrada do usuário
 consulta = st.text_input("Digite o tema da busca (ex: qualidade da água no Brasil):")
