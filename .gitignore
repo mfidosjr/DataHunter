@@ -1,1 +1,12 @@
+# Ambiente
 .env
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Dados gerados em runtime
+datasets/
+datasets_baixados.zip
+coverage.xml
+.coverage
