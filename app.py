@@ -21,19 +21,24 @@ from api_detector import detectar_apis_na_pagina, baixar_dados_da_api
 from semantic_analyzer import gerar_resumo_semantico
 from kaggle_source import buscar_datasets_kaggle, baixar_dataset_kaggle
 from huggingface_source import buscar_datasets_hf, baixar_dataset_hf
+from history import save_search, list_searches, get_search, delete_search, clear_history
 
-VERSION = "6.1"
+VERSION = "6.2"
 UPDATED = "2026-04-10"
 
 SYSTEM_PROMPT = """Você é um assistente especializado em encontrar bases de dados para projetos de analytics e pesquisa em IA.
 
-Seu papel é entender o que o usuário precisa e, após 1 ou 2 trocas de mensagens, extrair palavras-chave de busca.
+Seu papel é entender o que o usuário precisa através de uma conversa. Siga estas regras obrigatórias:
 
-Quando tiver contexto suficiente, finalize sua resposta com um bloco JSON exatamente neste formato (sem nada depois):
-KEYWORDS_JSON: ["keyword1", "keyword2", "keyword3", "keyword4"]
+1. Na PRIMEIRA mensagem do usuário: NUNCA extraia keywords. Faça EXATAMENTE 1 pergunta de refinamento para entender melhor o contexto (ex: finalidade, período, geografia, formato esperado).
 
-As keywords devem ser em inglês e português, incluindo sinônimos técnicos relevantes.
-Seja objetivo e direto. Faça no máximo 2 perguntas de refinamento."""
+2. Na SEGUNDA mensagem em diante: se já tiver contexto suficiente, finalize sua resposta com o bloco abaixo. Caso ainda precise de mais detalhes, faça mais 1 pergunta.
+
+Quando estiver pronto para buscar, finalize com exatamente este formato:
+KEYWORDS_JSON: ["keyword1 em inglês", "keyword2 em inglês", "termo em português", "sinônimo técnico"]
+
+As keywords devem cobrir sinônimos técnicos em inglês e português.
+Seja direto e objetivo nas perguntas."""
 
 # -------------------------------------------------------------------
 # Helpers
@@ -51,6 +56,24 @@ def _chat_groq(messages: list) -> str:
         return response.choices[0].message.content.strip()
     except Exception as e:
         return f"(Erro ao conectar ao assistente: {e})"
+
+
+def _gerar_titulo(primeira_mensagem: str) -> str:
+    """Gera um título curto (3-5 palavras) para a sessão de busca."""
+    try:
+        from groq import Groq
+        client = Groq(api_key=os.environ["GROQ_API_KEY"])
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            max_tokens=20,
+            messages=[{
+                "role": "user",
+                "content": f"Crie um título curto (3 a 5 palavras, sem aspas) para uma busca de dados sobre: {primeira_mensagem}"
+            }],
+        )
+        return response.choices[0].message.content.strip().strip('"').strip("'")
+    except Exception:
+        return ""
 
 
 def _extrair_keywords(resposta: str) -> list[str] | None:
@@ -173,6 +196,8 @@ for key, default in {
     "keywords_prontas": False,
     "resultados": [],
     "buscou": False,
+    "session_title": "",
+    "search_saved": False,
 }.items():
     if key not in st.session_state:
         st.session_state[key] = default
@@ -181,6 +206,48 @@ for key, default in {
 # Layout
 # -------------------------------------------------------------------
 st.set_page_config(page_title="Data Hunter", page_icon="🔎", layout="wide")
+
+# -------------------------------------------------------------------
+# Sidebar — Histórico de buscas
+# -------------------------------------------------------------------
+with st.sidebar:
+    st.markdown("### 🕓 Histórico de buscas")
+    historico = list_searches(limit=30)
+
+    if not historico:
+        st.caption("Nenhuma busca realizada ainda.")
+    else:
+        for item in historico:
+            kws = json.loads(item["keywords"])
+            kws_preview = ", ".join(kws[:3]) + ("…" if len(kws) > 3 else "")
+            col_a, col_b = st.columns([5, 1])
+            with col_a:
+                st.markdown(f"**{item['title']}**")
+                st.caption(f"🗓 {item['created_at']} · 📦 {item['n_results']} datasets  \n🔑 {kws_preview}")
+            btn_restaurar = col_a.button(
+                "↩ Restaurar",
+                key=f"hist_{item['id']}",
+                use_container_width=True,
+            )
+            if btn_restaurar:
+                # Restaura a busca anterior
+                st.session_state.chat_messages = json.loads(item["chat"])
+                st.session_state.keywords = kws
+                st.session_state.keywords_prontas = True
+                st.session_state.session_title = item["title"]
+                st.session_state.resultados = []
+                st.session_state.buscou = False
+                st.session_state.search_saved = False
+                st.rerun()
+
+            if col_b.button("🗑️", key=f"del_{item['id']}", help="Remover"):
+                delete_search(item["id"])
+                st.rerun()
+
+        st.divider()
+        if st.button("🗑️ Limpar todo o histórico", use_container_width=True):
+            clear_history()
+            st.rerun()
 
 col_title, col_ver = st.columns([6, 1])
 with col_title:
@@ -198,36 +265,51 @@ st.divider()
 # -------------------------------------------------------------------
 # Seção 1 — Chat de intenção
 # -------------------------------------------------------------------
-st.subheader("💬 O que você precisa?")
+col_chat_title, col_session_title = st.columns([3, 4])
+col_chat_title.subheader("💬 O que você precisa?")
+if st.session_state.session_title:
+    col_session_title.markdown(
+        f"<div style='padding-top:10px;font-size:1rem;color:#4C9BE8;font-weight:600'>"
+        f"📌 {st.session_state.session_title}</div>",
+        unsafe_allow_html=True,
+    )
 
-for msg in st.session_state.chat_messages:
-    with st.chat_message(msg["role"]):
-        # Exibe só o texto, sem o bloco KEYWORDS_JSON
-        texto = msg["content"].split("KEYWORDS_JSON:")[0].strip()
-        st.markdown(texto)
+# Histórico do chat em container com scroll
+chat_container = st.container(height=340)
+with chat_container:
+    for msg in st.session_state.chat_messages:
+        with st.chat_message(msg["role"]):
+            texto = msg["content"].split("KEYWORDS_JSON:")[0].strip()
+            st.markdown(texto)
 
-if prompt := st.chat_input("Descreva os dados que você precisa..."):
-    st.session_state.chat_messages.append({"role": "user", "content": prompt})
+# Input fixo abaixo do histórico
+with st.form("chat_form", clear_on_submit=True):
+    col_input, col_btn = st.columns([6, 1])
+    prompt = col_input.text_input(
+        "chat",
+        placeholder="Descreva os dados que você precisa...",
+        label_visibility="collapsed",
+    )
+    enviar = col_btn.form_submit_button("Enviar ➤", use_container_width=True)
 
-    with st.chat_message("user"):
-        st.markdown(prompt)
+if enviar and prompt.strip():
+    st.session_state.chat_messages.append({"role": "user", "content": prompt.strip()})
+
+    # Gera título na primeira mensagem
+    if not st.session_state.session_title:
+        st.session_state.session_title = _gerar_titulo(prompt.strip())
 
     groq_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + st.session_state.chat_messages
-
-    with st.chat_message("assistant"):
-        with st.spinner("Pensando..."):
-            resposta = _chat_groq(groq_messages)
-
-        texto_visivel = resposta.split("KEYWORDS_JSON:")[0].strip()
-        st.markdown(texto_visivel)
-
+    with st.spinner("Pensando..."):
+        resposta = _chat_groq(groq_messages)
     st.session_state.chat_messages.append({"role": "assistant", "content": resposta})
 
-    keywords = _extrair_keywords(resposta)
-    if keywords:
-        st.session_state.keywords = keywords
-        st.session_state.keywords_prontas = True
-
+    msgs_usuario = sum(1 for m in st.session_state.chat_messages if m["role"] == "user")
+    if msgs_usuario >= 2:
+        keywords = _extrair_keywords(resposta)
+        if keywords:
+            st.session_state.keywords = keywords
+            st.session_state.keywords_prontas = True
     st.rerun()
 
 # -------------------------------------------------------------------
@@ -239,17 +321,16 @@ if st.session_state.keywords_prontas:
 
     # Keywords editáveis
     st.markdown("**Palavras-chave** — edite, adicione ou remova:")
-    keywords_editadas = st.pills(
+    keywords_editadas = st.multiselect(
         label="keywords",
         options=st.session_state.keywords,
-        selection_mode="multi",
         default=st.session_state.keywords,
         label_visibility="collapsed",
     )
 
-    col_add, col_spacer = st.columns([2, 5])
-    nova_kw = col_add.text_input("Adicionar keyword", placeholder="ex: radar spectrum", label_visibility="collapsed")
-    if col_add.button("＋ Adicionar", use_container_width=True) and nova_kw.strip():
+    col_add, col_btn, col_spacer = st.columns([3, 1, 3])
+    nova_kw = col_add.text_input("Nova keyword", placeholder="ex: radar spectrum", label_visibility="collapsed")
+    if col_btn.button("＋ Adicionar", use_container_width=True) and nova_kw.strip():
         if nova_kw.strip() not in st.session_state.keywords:
             st.session_state.keywords.append(nova_kw.strip())
         st.rerun()
@@ -261,10 +342,9 @@ if st.session_state.keywords_prontas:
     usar_hf      = fc3.checkbox("🤗 Hugging Face", value=True)
 
     st.markdown("**Formatos aceitos:**")
-    formatos = st.pills(
+    formatos = st.multiselect(
         "formatos",
         options=["csv", "xlsx", "json", "zip", "parquet"],
-        selection_mode="multi",
         default=["csv", "xlsx", "json", "zip"],
         label_visibility="collapsed",
     )
@@ -276,6 +356,7 @@ if st.session_state.keywords_prontas:
         with st.spinner(""):
             st.session_state.resultados = _executar_busca(kws_ativas, fontes, list(formatos))
         st.session_state.buscou = True
+        st.session_state.search_saved = False
         st.rerun()
 
 # -------------------------------------------------------------------
@@ -287,6 +368,17 @@ if st.session_state.buscou:
 
     resumos = st.session_state.resultados
 
+    # Salva no histórico uma única vez por busca
+    if not st.session_state.search_saved:
+        save_search(
+            title=st.session_state.session_title or "Busca sem título",
+            keywords=st.session_state.keywords,
+            fontes={},
+            n_results=len(resumos),
+            chat=st.session_state.chat_messages,
+        )
+        st.session_state.search_saved = True
+
     if not resumos:
         st.warning("Nenhum dataset encontrado. Tente ajustar as keywords ou fontes.")
     else:
@@ -297,7 +389,7 @@ if st.session_state.buscou:
         fig = px.bar(
             df_res, x="arquivo", y=["qualidade", "relevancia"],
             barmode="group",
-            color_discrete_map={"qualidade": "#4C9BE8", "relevancia": "#F4845F"},
+            color_discrete_map={"qualidade": "#4C9BE8", "relevancia": "#2ECC71"},
             labels={"value": "Score (0–100)", "variable": "Dimensão"},
             height=280,
         )
@@ -326,6 +418,7 @@ if st.session_state.buscou:
 
         # Botão para nova busca
         if st.button("🔄 Nova busca", use_container_width=True):
-            for key in ["chat_messages", "keywords", "keywords_prontas", "resultados", "buscou"]:
-                st.session_state[key] = [] if isinstance(st.session_state[key], list) else False
+            for key in ["chat_messages", "keywords", "keywords_prontas", "resultados", "buscou", "session_title", "search_saved"]:
+                val = st.session_state[key]
+                st.session_state[key] = [] if isinstance(val, list) else (False if isinstance(val, bool) else "")
             st.rerun()
