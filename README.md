@@ -16,6 +16,7 @@
   <img alt="Hugging Face" src="https://img.shields.io/badge/Hugging%20Face-FFD21E?style=flat-square&logo=huggingface&logoColor=black"/>
   <img alt="Groq" src="https://img.shields.io/badge/Groq%20AI-F55036?style=flat-square&logo=groq&logoColor=white"/>
   <img alt="License" src="https://img.shields.io/badge/license-MIT-22C55E?style=flat-square"/>
+  <img alt="CI" src="https://github.com/mfidosjr/DataHunter/actions/workflows/ci.yml/badge.svg"/>
 </p>
 
 ---
