@@ -1,0 +1,138 @@
+[
+  {
+    "id": "eme_01",
+    "intent": "encontrar datasets de emissões eletromagnéticas e monitoração de espectro",
+    "keywords": ["electromagnetic emitters", "RF emissions", "emissores eletromagnéticos"],
+    "fontes_esperadas": [
+      "fcc.gov", "anatel.gov.br", "itu.int", "ieee-dataport.org", "zenodo.org"
+    ],
+    "datasets_conhecidos": [
+      {
+        "titulo": "FCC Equipment Authorization Database",
+        "url": "https://www.fcc.gov/oet/ea/fccid",
+        "descricao": "Base de dados de equipamentos autorizados pela FCC com parâmetros de emissão"
+      },
+      {
+        "titulo": "FCC Spectrum Monitoring",
+        "url": "https://data.fcc.gov/api/",
+        "descricao": "API pública da FCC com dados de monitoração do espectro de radiofrequência"
+      },
+      {
+        "titulo": "ANATEL MOSAICO - Monitoração do Espectro",
+        "url": "https://informacoes.anatel.gov.br/paineis/espectro",
+        "descricao": "Painel da ANATEL com dados de monitoração do espectro no Brasil"
+      },
+      {
+        "titulo": "ANATEL Outorgas e Licenciamentos",
+        "url": "https://www.anatel.gov.br/dadosabertos/",
+        "descricao": "Dados abertos da ANATEL: estações licenciadas, outorgas, emissoras"
+      },
+      {
+        "titulo": "ITU BR IFIC - International Frequency Information Circular",
+        "url": "https://www.itu.int/pub/R-IFIC",
+        "descricao": "Base de dados da ITU com coordenações de frequência e estações espaciais"
+      }
+    ],
+    "keywords_esperadas_na_expansao": [
+      "EMI", "EMC", "EIRP", "radiated emissions", "spectrum", "field strength",
+      "RF", "antenna", "emissoes eletromagneticas"
+    ]
+  },
+  {
+    "id": "eme_02",
+    "intent": "dados de interferência de radiofrequência e espectro",
+    "keywords": ["RF interference", "spectrum occupancy", "radio frequency"],
+    "fontes_esperadas": [
+      "fcc.gov", "itu.int", "ofcom.org.uk", "zenodo.org", "ieee-dataport.org"
+    ],
+    "datasets_conhecidos": [
+      {
+        "titulo": "Ofcom Spectrum Monitoring Data",
+        "url": "https://www.ofcom.org.uk/research-and-data/telecoms-research/spectrum-monitoring",
+        "descricao": "Dados de ocupação do espectro medidos pela Ofcom (UK)"
+      },
+      {
+        "titulo": "IEEE DataPort - RF Signal Datasets",
+        "url": "https://ieee-dataport.org/search#subject/rf-signal",
+        "descricao": "Coleção de datasets de sinais RF para pesquisa em engenharia"
+      },
+      {
+        "titulo": "Zenodo - Spectrum Monitoring Datasets",
+        "url": "https://zenodo.org/search?q=spectrum+monitoring",
+        "descricao": "Datasets de monitoramento de espectro publicados em repositório científico"
+      }
+    ],
+    "keywords_esperadas_na_expansao": [
+      "spectrum occupancy", "radio frequency interference", "RFI", "spectrum monitoring dataset"
+    ]
+  },
+  {
+    "id": "eme_03",
+    "intent": "dados de EMC - compatibilidade eletromagnética e testes de conformidade",
+    "keywords": ["EMC", "electromagnetic compatibility", "conducted emissions"],
+    "fontes_esperadas": [
+      "ieee-dataport.org", "zenodo.org", "etsi.org", "data.europa.eu"
+    ],
+    "datasets_conhecidos": [
+      {
+        "titulo": "ETSI Conformance Test Data",
+        "url": "https://www.etsi.org/standards",
+        "descricao": "Normas e dados de referência para testes de conformidade EMC"
+      },
+      {
+        "titulo": "IEEE DataPort - EMC Measurements",
+        "url": "https://ieee-dataport.org/search#subject/electromagnetic-compatibility",
+        "descricao": "Medições de EMC e emissões conduzidas/irradiadas"
+      }
+    ],
+    "keywords_esperadas_na_expansao": [
+      "EMC", "conducted emissions", "radiated immunity", "CISPR", "IEC 61000", "EMI filter"
+    ]
+  },
+  {
+    "id": "clima_01",
+    "intent": "dados climáticos históricos do Brasil",
+    "keywords": ["clima", "temperatura", "precipitação", "Brasil"],
+    "fontes_esperadas": [
+      "dados.gov.br", "gov.br", "inmet.gov.br", "kaggle.com", "zenodo.org"
+    ],
+    "datasets_conhecidos": [
+      {
+        "titulo": "INMET - Dados Históricos Climatológicos",
+        "url": "https://bdmep.inmet.gov.br/",
+        "descricao": "Banco de dados meteorológicos do INMET com séries históricas de todas as estações"
+      },
+      {
+        "titulo": "NOAA Global Surface Summary of Day",
+        "url": "https://www.ncei.noaa.gov/access/search/data-search/global-summary-of-the-day",
+        "descricao": "Resumo diário de superfície global da NOAA"
+      }
+    ],
+    "keywords_esperadas_na_expansao": [
+      "temperature", "precipitation", "INMET", "NOAA", "weather station", "clima historico brasil"
+    ]
+  },
+  {
+    "id": "saude_01",
+    "intent": "dados de mortalidade e doenças no Brasil",
+    "keywords": ["mortalidade", "CID", "DATASUS", "saúde pública"],
+    "fontes_esperadas": [
+      "gov.br", "dados.gov.br", "kaggle.com", "opendata.cern.ch"
+    ],
+    "datasets_conhecidos": [
+      {
+        "titulo": "DATASUS - SIM Sistema de Informação sobre Mortalidade",
+        "url": "https://datasus.saude.gov.br/mortalidade-desde-1979-pelo-sim",
+        "descricao": "Microdados de mortalidade do Ministério da Saúde desde 1979"
+      },
+      {
+        "titulo": "SINAN - Sistema de Informação de Agravos de Notificação",
+        "url": "https://datasus.saude.gov.br/doencas-e-agravos-de-notificacao-de-2007-em-diante-sinan",
+        "descricao": "Dados de doenças de notificação compulsória no Brasil"
+      }
+    ],
+    "keywords_esperadas_na_expansao": [
+      "mortality", "disease", "epidemiology", "DATASUS", "SIM", "SINAN", "dados saude brasil"
+    ]
+  }
+]

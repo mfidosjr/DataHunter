@@ -13,19 +13,20 @@ try:
 except ImportError:
     pass
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from search import buscar_paginas
-from validation import validar_links_de_dados, extrair_tabelas_html
+from validation import validar_links_em_paralelo, extrair_tabelas_html
 from downloader import baixar_arquivo
-from analyzer import analisar_dataset, ler_dataset
+from analyzer import analisar_dataset
 from api_detector import detectar_apis_na_pagina, baixar_dados_da_api
-from semantic_analyzer import gerar_resumo_semantico
 from kaggle_source import buscar_datasets_kaggle, baixar_dataset_kaggle
 from huggingface_source import buscar_datasets_hf, baixar_dataset_hf
 from zenodo_source import buscar_datasets_zenodo, baixar_datasets_zenodo
 from query_expander import expandir_query
 from history import save_search, list_searches, get_search, delete_search, clear_history
 
-VERSION = "6.3"
+VERSION = "6.9"
 UPDATED = "2026-04-10"
 
 SYSTEM_PROMPT = """Você é um assistente especializado em encontrar bases de dados para projetos de analytics e pesquisa em IA.
@@ -119,105 +120,203 @@ def _card_dataset(resumo: dict, idx: int):
             )
 
 
-def _executar_busca(keywords: list, fontes: dict, formatos: list, intencao: str = "") -> list:
-    """Executa o pipeline completo e retorna lista de resumos analisados."""
+def _render_metricas(m: dict, placeholders: dict):
+    """Atualiza os 4 contadores de progresso ao vivo."""
+    placeholders["variantes"].metric("🧠 Variantes", m["variantes"])
+    placeholders["paginas"].metric("🌐 Páginas", m["paginas"])
+    placeholders["arquivos"].metric("💾 Arquivos", m["arquivos"])
+    placeholders["datasets"].metric("📦 Datasets", m["datasets"])
+
+
+def _executar_busca(keywords: list, fontes: dict, formatos: list,
+                   intencao: str = "", placeholders: dict = None) -> list:
+    """Executa o pipeline completo, atualizando métricas e detalhes ao vivo."""
+
+    metricas = {"variantes": 0, "paginas": 0, "arquivos": 0, "datasets": 0}
+
+    def _atualizar(campo, valor):
+        metricas[campo] = valor
+        if placeholders:
+            _render_metricas(metricas, placeholders)
 
     # --- Expansão de query
-    with st.status("🧠 Expandindo keywords com IA...", expanded=False) as s:
+    with st.status("🧠 Expansão de query com IA", expanded=True) as s:
         variantes = expandir_query(keywords, intencao)
-        s.update(label=f"🧠 {len(variantes)} variantes de busca geradas", state="complete")
+        _atualizar("variantes", len(variantes))
+        for v in variantes:
+            st.caption(f"• {v}")
+        s.update(label=f"🧠 {len(variantes)} variantes geradas", state="complete", expanded=False)
 
     query_principal = variantes[0]
     arquivos = []
-    # Mapa: caminho → metadata do dataset (título, descrição, fonte)
     meta_map: dict[str, dict] = {}
 
     # --- Web
     if fontes.get("web"):
-        with st.status("🌐 Buscando na web...", expanded=False) as s:
-            paginas = []
-            for v in variantes[:3]:
-                paginas.extend(buscar_paginas(v))
-            paginas = list(dict.fromkeys(paginas))
-            links = []
-            for p in paginas:
-                links.extend(validar_links_de_dados(p))
-            links = list(set(links))
-            s.update(label=f"🌐 Web — {len(links)} links encontrados", state="complete")
-            for link in links:
-                ext = link.split("?")[0].split(".")[-1].lower()
-                if ext in formatos:
-                    c = baixar_arquivo(link)
+        with st.status("🌐 Web (DuckDuckGo)", expanded=True) as s:
+            diretos_todos: list[str] = []
+            paginas_todas: list[str] = []
+            for i, v in enumerate(variantes[:3], 1):
+                st.caption(f"• Variante {i}/3: `{v}`")
+                d, p = buscar_paginas(v, max_results=12)
+                diretos_todos.extend(d)
+                paginas_todas.extend(p)
+
+            diretos_todos = list(dict.fromkeys(diretos_todos))
+            paginas_todas = list(dict.fromkeys(paginas_todas))
+            _atualizar("paginas", len(paginas_todas))
+            st.caption(f"• {len(diretos_todos)} links diretos · {len(paginas_todas)} páginas para vasculhar")
+
+            # Crawl paralelo — retorna (url, titulo_pagina, descricao_pagina)
+            st.caption(f"• Vasculhando {len(paginas_todas)} páginas em paralelo…")
+            links_crawl = validar_links_em_paralelo(paginas_todas, max_workers=10)
+            # links diretos não têm contexto de página
+            links_diretos_meta = [(u, "", "") for u in diretos_todos]
+            links_com_meta = list({item[0]: item for item in links_diretos_meta + links_crawl}.values())
+            st.caption(f"• {len(links_com_meta)} links de datasets encontrados no total")
+
+            candidatos = [
+                (url, titulo, desc) for url, titulo, desc in links_com_meta
+                if url.split("?")[0].rsplit(".", 1)[-1].lower() in formatos
+            ]
+            st.caption(f"• Baixando {len(candidatos)} arquivos em paralelo…")
+
+            novos = 0
+            with ThreadPoolExecutor(max_workers=6) as ex:
+                futs = {ex.submit(baixar_arquivo, url): (url, titulo, desc)
+                        for url, titulo, desc in candidatos}
+                for fut in as_completed(futs):
+                    url, titulo, desc = futs[fut]
+                    c = fut.result()
                     if c:
                         arquivos.append(c)
-                        meta_map[c] = {"fonte": "web", "titulo": "", "descricao": ""}
-            if not links:
-                for i, p in enumerate(paginas):
+                        meta_map[c] = {"fonte": "web", "titulo": titulo, "descricao": desc}
+                        novos += 1
+                        _atualizar("arquivos", len(arquivos))
+
+            if not links_com_meta:
+                for i, p in enumerate(paginas_todas[:5]):
                     for j, t in enumerate(extrair_tabelas_html(p)):
                         os.makedirs("datasets", exist_ok=True)
                         c = f"datasets/pagina{i}_tabela{j}.csv"
                         t.to_csv(c, index=False)
                         arquivos.append(c)
                         meta_map[c] = {"fonte": "web", "titulo": "", "descricao": ""}
+                        novos += 1
+                        _atualizar("arquivos", len(arquivos))
+
+            s.update(label=f"🌐 Web — {len(paginas_todas)} páginas · {novos} arquivos baixados",
+                     state="complete", expanded=False)
 
     # --- Kaggle
     if fontes.get("kaggle"):
-        with st.status("🏆 Buscando no Kaggle...", expanded=False) as s:
-            dss = buscar_datasets_kaggle(query_principal, max_results=5)
-            s.update(label=f"🏆 Kaggle — {len(dss)} datasets encontrados", state="complete")
+        with st.status("🏆 Kaggle", expanded=True) as s:
+            dss = []
+            for v in variantes[:3]:
+                st.caption(f"• Query: `{v}`")
+                novos_dss = buscar_datasets_kaggle(v, max_results=5)
+                refs_existentes = {d["ref"] for d in dss}
+                dss += [d for d in novos_dss if d["ref"] not in refs_existentes]
+            st.caption(f"• {len(dss)} datasets encontrados")
+            novos = 0
             for ds in dss:
+                st.caption(f"  ↳ {ds.get('titulo', ds['ref'])[:60]} ({ds.get('downloads', 0):,} downloads)")
                 for f in baixar_dataset_kaggle(ds["ref"]):
                     arquivos.append(f)
                     meta_map[f] = {"fonte": "kaggle", "titulo": ds.get("titulo", ""), "descricao": ""}
+                    novos += 1
+                    _atualizar("arquivos", len(arquivos))
+            s.update(label=f"🏆 Kaggle — {len(dss)} datasets · {novos} arquivos baixados",
+                     state="complete", expanded=False)
 
     # --- Hugging Face
     if fontes.get("hf"):
-        with st.status("🤗 Buscando no Hugging Face...", expanded=False) as s:
+        with st.status("🤗 Hugging Face", expanded=True) as s:
+            st.caption(f"• Query: `{query_principal}`")
             dss = buscar_datasets_hf(query_principal, max_results=5)
-            s.update(label=f"🤗 Hugging Face — {len(dss)} datasets encontrados", state="complete")
+            st.caption(f"• {len(dss)} datasets encontrados")
+            novos = 0
             for ds in dss:
+                st.caption(f"  ↳ {ds['titulo'][:60]} ({ds.get('downloads', 0):,} downloads)")
                 for f in baixar_dataset_hf(ds["ref"]):
                     arquivos.append(f)
                     meta_map[f] = {"fonte": "huggingface", "titulo": ds.get("titulo", ""), "descricao": ""}
+                    novos += 1
+                    _atualizar("arquivos", len(arquivos))
+            s.update(label=f"🤗 Hugging Face — {len(dss)} datasets · {novos} arquivos baixados",
+                     state="complete", expanded=False)
 
     # --- Zenodo
     if fontes.get("zenodo"):
-        with st.status("🔬 Buscando no Zenodo...", expanded=False) as s:
-            dss = buscar_datasets_zenodo(query_principal, max_results=8)
-            # Tenta variantes se não achou nada
-            if not dss and len(variantes) > 1:
-                dss = buscar_datasets_zenodo(variantes[1], max_results=8)
-            s.update(label=f"🔬 Zenodo — {len(dss)} datasets encontrados", state="complete")
-            for ds in dss:
-                for f in baixar_datasets_zenodo(ds):
-                    arquivos.append(f)
-                    meta_map[f] = {"fonte": "zenodo", "titulo": ds.get("titulo", ""), "descricao": ds.get("descricao", "")}
+        with st.status("🔬 Zenodo", expanded=True) as s:
+            dss = []
+            refs_zen: set[str] = set()
+            for v in variantes[:4]:
+                st.caption(f"• Query: `{v}`")
+                novos_dss = buscar_datasets_zenodo(v, max_results=6)
+                for d in novos_dss:
+                    if d["ref"] not in refs_zen:
+                        refs_zen.add(d["ref"])
+                        dss.append(d)
+            st.caption(f"• {len(dss)} datasets encontrados — baixando em paralelo…")
+
+            novos = 0
+            with ThreadPoolExecutor(max_workers=4) as ex:
+                futs = {ex.submit(baixar_datasets_zenodo, ds): ds for ds in dss}
+                for fut in as_completed(futs):
+                    ds = futs[fut]
+                    arqs_ds = fut.result()
+                    tipos = ", ".join(set(f.split(".")[-1] for f in arqs_ds)) if arqs_ds else "nenhum"
+                    st.caption(f"  ↳ {ds['titulo'][:55]} · {len(arqs_ds)} arq ({tipos})")
+                    for f in arqs_ds:
+                        arquivos.append(f)
+                        meta_map[f] = {"fonte": "zenodo", "titulo": ds.get("titulo", ""), "descricao": ds.get("descricao", "")}
+                        novos += 1
+                        _atualizar("arquivos", len(arquivos))
+
+            s.update(label=f"🔬 Zenodo — {len(dss)} datasets · {novos} arquivos baixados",
+                     state="complete", expanded=False)
 
     if not arquivos:
         return []
 
-    # --- Análise com scores estrutural + semântico IA
+    # --- Análise paralela
     resumos = []
-    with st.status(f"📊 Analisando {len(arquivos)} arquivos...", expanded=False) as s:
-        for caminho in arquivos:
-            meta = meta_map.get(caminho, {})
-            resumo = analisar_dataset(
-                caminho,
-                query=query_principal,
-                titulo=meta.get("titulo", ""),
-                descricao=meta.get("descricao", ""),
-            )
-            if resumo:
-                try:
-                    df_tmp = ler_dataset(caminho)
-                    resumo["descricao"] = gerar_resumo_semantico(df_tmp.columns) if df_tmp is not None else meta.get("descricao", "—")
-                except Exception:
-                    resumo["descricao"] = meta.get("descricao", "—")
-                resumo["fonte"] = meta.get("fonte", "web")
-                resumos.append(resumo)
-        s.update(label=f"📊 {len(resumos)} datasets analisados", state="complete")
 
-    # Ordena por relevância IA (mais rica), com fallback para relevância por tokens
+    def _analisar_um(caminho: str) -> dict | None:
+        meta = meta_map.get(caminho, {})
+        resumo = analisar_dataset(
+            caminho,
+            query=query_principal,
+            titulo=meta.get("titulo", ""),
+            descricao=meta.get("descricao", ""),
+        )
+        if resumo:
+            resumo["fonte"] = meta.get("fonte", "web")
+        return resumo
+
+    MIN_RELEVANCIA = 20  # descarta arquivos claramente fora do tema
+
+    with st.status(f"📊 Analisando {len(arquivos)} arquivos em paralelo", expanded=True) as s:
+        with ThreadPoolExecutor(max_workers=4) as ex:
+            futs = {ex.submit(_analisar_um, c): c for c in arquivos}
+            for fut in as_completed(futs):
+                resumo = fut.result()
+                if resumo:
+                    score = resumo.get("relevancia_ia", resumo["relevancia"])
+                    if score >= MIN_RELEVANCIA:
+                        resumos.append(resumo)
+                        _atualizar("datasets", len(resumos))
+                        st.caption(
+                            f"• {resumo['arquivo'][:45]} — "
+                            f"qualidade {resumo['qualidade']} · relevância IA {score}"
+                        )
+                    else:
+                        st.caption(f"  ↳ descartado (relevância {score} < {MIN_RELEVANCIA}): "
+                                   f"{resumo['arquivo'][:40]}")
+        s.update(label=f"📊 {len(resumos)} relevantes de {len(arquivos)} analisados",
+                 state="complete", expanded=False)
+
     return sorted(resumos, key=lambda x: x.get("relevancia_ia", x["relevancia"]), reverse=True)
 
 
@@ -391,8 +490,21 @@ if st.session_state.keywords_prontas:
         intencao_usuario = " ".join(
             m["content"] for m in st.session_state.chat_messages if m["role"] == "user"
         )
-        with st.spinner(""):
-            st.session_state.resultados = _executar_busca(kws_ativas, fontes, list(formatos), intencao_usuario)
+
+        # Métricas ao vivo
+        st.markdown("**Progresso da busca:**")
+        mc1, mc2, mc3, mc4 = st.columns(4)
+        placeholders = {
+            "variantes": mc1.empty(),
+            "paginas":   mc2.empty(),
+            "arquivos":  mc3.empty(),
+            "datasets":  mc4.empty(),
+        }
+        _render_metricas({"variantes": 0, "paginas": 0, "arquivos": 0, "datasets": 0}, placeholders)
+
+        st.session_state.resultados = _executar_busca(
+            kws_ativas, fontes, list(formatos), intencao_usuario, placeholders
+        )
         st.session_state.buscou = True
         st.session_state.search_saved = False
         st.rerun()

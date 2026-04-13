@@ -105,6 +105,7 @@ def analisar_dataset(filepath, query=None, titulo="", descricao=""):
       - qualidade:    completude e tamanho (estrutural)
       - relevancia:   sobreposição de tokens query ↔ colunas (rápido)
       - relevancia_ia: score semântico via Groq (quando disponível)
+      - descricao:    resumo semântico das colunas (keyword ou Groq)
     """
     try:
         df = ler_dataset(filepath)
@@ -126,6 +127,13 @@ def analisar_dataset(filepath, query=None, titulo="", descricao=""):
         rel_tokens = _score_relevancia_tokens(df.columns, query)
         rel_ia = _score_relevancia_ia(titulo, df.columns, descricao, query)
 
+        # Gera descrição semântica no mesmo passo (evita reler o arquivo depois)
+        try:
+            from semantic_analyzer import gerar_resumo_semantico
+            desc = gerar_resumo_semantico(df.columns)
+        except Exception:
+            desc = descricao or "—"
+
         resumo = {
             'arquivo':      os.path.basename(filepath),
             'linhas':       linhas,
@@ -135,6 +143,7 @@ def analisar_dataset(filepath, query=None, titulo="", descricao=""):
             'qualidade':    _score_qualidade(linhas, colunas, percentual_nulos),
             'relevancia':   rel_tokens,
             'relevancia_ia': rel_ia if rel_ia is not None else rel_tokens,
+            'descricao':    desc,
             'caminho':      filepath,
         }
         return resumo
