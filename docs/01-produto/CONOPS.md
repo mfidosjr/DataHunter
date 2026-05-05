@@ -608,15 +608,57 @@ Eventos de falha de conector, detecção de arquivos maliciosos, vazamento de de
 
 ## 17. Premissas
 
-As premissas são condições assumidas como verdadeiras para o sucesso operacional do DataHunter. Caso deixem de ser válidas, tornam-se riscos ou necessidades de mudança arquitetural.
+As premissas são condições assumidas como verdadeiras para orientar o desenho e a operação do DataHunter. Elas não são garantias absolutas: caso uma premissa deixe de ser válida, o impacto deve ser tratado como risco ou necessidade de ajuste no roadmap e na arquitetura.
+
+### 17.1 Premissas de Produto e Operação
 
 | ID | Premissa |
 | --- | --- |
-| **PR-01** | O usuário prioriza a qualidade e autoridade da fonte em relação à quantidade bruta de resultados. |
-| **PR-02** | O acesso à internet e às APIs de terceiros (Kaggle, Groq) é estável o suficiente para a operação. |
-| **PR-03** | O sistema operará primariamente em ambiente local ou servidores controlados (local-first). |
-| **PR-04** | O PKGL será o orquestrador parceiro principal para consumo de sinais de confronto. |
-| **PR-05** | Modelos de linguagem de alta performance (Llama 3) continuarão disponíveis via API de baixa latência (Groq). |
+| **PR-OP-01** | O pesquisador técnico valoriza a autoridade da fonte e a exaustividade da descoberta acima da simplicidade de busca. |
+| **PR-OP-02** | A primeira entrega será focada em pesquisadores individuais e sistemas agênticos (PKGL) em ambiente controlado. |
+| **PR-OP-03** | A qualificação semântica (scoring) é o principal diferencial em relação a motores de busca genéricos. |
+| **PR-OP-04** | O valor operacional é demonstrado pela redução do tempo de localização de evidências técnicas e científicas. |
+
+### 17.2 Premissas de Canais e Experiência
+
+| ID | Premissa |
+| --- | --- |
+| **PR-CAN-01** | A interface Streamlit é suficiente para a validação do conceito e uso humano no ciclo inicial. |
+| **PR-CAN-02** | A integração sistêmica via API Headless é a premissa para o funcionamento do ecossistema de governança. |
+| **PR-CAN-03** | O usuário precisa de visibilidade sobre o "raciocínio" de expansão da IA para confiar nos resultados do ranking. |
+
+### 17.3 Premissas Tecnológicas
+
+| ID | Premissa |
+| --- | --- |
+| **PR-TEC-01** | O provedor de LLM (Groq) manterá a latência baixa o suficiente para permitir expansão semântica em tempo real. |
+| **PR-TEC-02** | A arquitetura de conectores modulares permitirá a injeção de novas APIs de dados (ex: Zenodo) sem alteração no núcleo. |
+| **PR-TEC-03** | O uso de processamento paralelo (multi-threading) é mandatório para a viabilidade da busca em múltiplos silos. |
+| **PR-TEC-04** | Modelos de linguagem de tamanho médio (70B) são suficientes para tarefas de qualificação de metadados técnicos. |
+
+### 17.4 Premissas de Dados e Conhecimento
+
+| ID | Premissa |
+| --- | --- |
+| **PR-DAD-01** | Os metadados brutos (título, descrição, tags) são substrato suficiente para um scoring semântico de alta precisão. |
+| **PR-DAD-02** | O licenciamento detectado é tratado como "Best Effort" e deve ser validado pelo curador humano no destino final. |
+| **PR-DAD-03** | O histórico de buscas locais servirá como base para evitar redundância de processamento e consumo de tokens. |
+
+### 17.5 Premissas de Integração e Ecossistema
+
+| ID | Premissa |
+| --- | --- |
+| **PR-INT-01** | O DataHunter atua como um provedor de "Sinais de Confronto" independente, sem depender do estado do PKGL. |
+| **PR-INT-02** | O Model Context Protocol (MCP) será o padrão adotado para a distribuição de descobertas para IDEs e Agentes Claude/GPT. |
+| **PR-INT-03** | Falhas em conectores externos serão tratadas como degradação parcial, nunca como falha total do orquestrador. |
+
+### 17.6 Premissas de Segurança e Governança
+
+| ID | Premissa |
+| --- | --- |
+| **PR-SEG-01** | O usuário é o detentor das chaves de API (ByoK) e responsável pelo custo de tokens associado às suas buscas. |
+| **PR-SEG-02** | O sistema deve preservar a privacidade das intenções de busca, não compartilhando demandas entre usuários ou sessões. |
+| **PR-SEG-03** | A rastreabilidade via Trace ID é a premissa básica para a auditoria de qualquer conhecimento derivado do DataHunter. |
 
 ---
 
