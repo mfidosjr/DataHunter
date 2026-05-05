@@ -759,15 +759,48 @@ A solução não deve ser considerada estável ou avançar para fases de maior a
 
 ---
 
-## 20. Roteiro Operacional (Roadmap)
+## 20. Roteiro Operacional da Solução
 
-A evolução do DataHunter segue o amadurecimento da arquitetura de 8 camadas:
+O roteiro operacional organiza a evolução do DataHunter, partindo de uma primeira entrega funcional de busca técnica até uma solução madura de descoberta agêntica integrada ao ecossistema de governança. Ele não substitui o roadmap detalhado, mas explicita a lógica de amadurecimento e os critérios de passagem entre fases.
 
-1.  **Fase 1 - Baseline (Atual)**: Consolidação da busca Web + Kaggle, interface Streamlit e scoring semântico via Groq.
-2.  **Fase 2 - Expansão de Fontes**: Integração nativa com Hugging Face, Zenodo e portais governamentais específicos via conectores dedicados.
-3.  **Fase 3 - Sinais de Confronto**: Estabilização da API Headless para consumo automatizado pelo PKGL e motores de auditoria.
-4.  **Fase 4 - MCP & Agents**: Lançamento do DataHunter como um **Model Context Protocol (MCP) Server**, permitindo uso direto por IDEs (Cursor/VSCode) e agentes Claude/GPT.
-5.  **Fase 5 - Deep Scoring**: Implementação de análise interna de amostras de dados (inspeção de colunas e estatísticas) para score de fidelidade.
+### 20.1 Fases de Evolução
+
+| Fase | Objetivo Operacional | Capacidades Principais | Evidência de Saída |
+| --- | --- | --- | --- |
+| **Fase 0 - Fundação** | Consolidar a visão e governança inicial do projeto. | CONOPS, SRS inicial, Matriz de Riscos e Estrutura AIT. | Documentos sincronizados e commitados. |
+| **Fase 1 - Baseline** | Provar a busca multi-fonte (Web+Kaggle) via interface Streamlit. | Orquestrador Sistema 1/2, Conectores iniciais, Scoring semântico Groq. | Ranking curado com Trace ID e proveniência. |
+| **Fase 2 - Expansão** | Ampliar a base de descoberta para repositórios técnicos globais. | Conectores nativos para Hugging Face, Zenodo e portais governamentais. | Diversidade de fontes em buscas complexas. |
+| **Fase 3 - Sinais** | Estabelecer a integração sistêmica estável com o PKGL. | API Headless, payload de "Sinais de Confronto", contrato JSON. | Consumo automatizado de achados pelo grafo PKGL. |
+| **Fase 4 - MCP** | Tornar o DataHunter um provedor de contexto para o trabalho de dev/pesquisa. | Model Context Protocol (MCP) Server, integração com Cursor/Agentes. | Uso do DataHunter direto em IDEs e chats de IA externos. |
+| **Fase 5 - Deep Score** | Aumentar a fidelidade do ranking via inspeção interna dos dados. | Análise de amostras (inspeção de CSV/JSON), estatísticas de fidelidade. | Score de relevância baseado em conteúdo real, não apenas metadados. |
+| **Fase 6 - Maturidade** | Operar como infraestrutura de descoberta para múltiplos sistemas. | Ecossistema maduro, monitoramento pleno de KPIs, governança total. | Produto operacional estável com métricas de recall e custo. |
+
+### 20.2 Critérios de Passagem entre Fases
+
+Uma fase só deve avançar para a seguinte quando:
+*   As evidências de saída da fase atual estiverem registradas e auditáveis.
+*   Riscos críticos associados às capacidades da fase foram mitigados.
+*   Os requisitos operacionais (Item 15) foram revisados e atualizados.
+*   Métricas mínimas de sucesso (Item 19) foram coletadas e analisadas.
+*   O fallback para o modo de operação degradado foi testado e validado.
+
+### 20.3 Relação com a Governança Documental
+
+| Documento | Papel no Roteiro |
+| --- | --- |
+| **CONOPS** | Orientar a visão e a lógica operacional de longo prazo. |
+| **SRS** | Detalhar os requisitos técnicos para implementação em cada fase. |
+| **RISCOS.md** | Monitorar os gatilhos e mitigações que podem atrasar o roteiro. |
+| **PLANO-AVALIACAO.md** | Definir as métricas de qualidade para declarar uma fase como concluída. |
+
+### 20.4 Princípios de Evolução
+
+O DataHunter deve evoluir preservando os seguintes pilares:
+1.  **Local-first como Base de Confiança**: A operação principal não deve depender de persistência cloud obrigatória.
+2.  **Autoridade sobre Popularidade**: O algoritmo de ranking deve sempre priorizar fontes oficiais e verificáveis.
+3.  **Interoperabilidade via Contratos**: Integrações devem seguir padrões abertos (JSON, MCP, APIs rest).
+4.  **Transparência Semântica**: O usuário deve sempre saber por que um dado foi classificado como relevante.
+5.  **Segurança By Design**: Novos conectores ou capacidades devem nascer com os filtros de integridade (Item 16) ativos.
 
 ---
 
