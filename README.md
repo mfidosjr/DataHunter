@@ -1,204 +1,149 @@
 <p align="center">
-  <img src="logo.png" alt="Data Hunter Logo" width="340"/>
+  <img src="logo.png" alt="DataHunter Logo" width="340"/>
 </p>
 
-<h1 align="center">Data Hunter <sub><sup>v6.9</sup></sub></h1>
+# DataHunter <sub><sup>v1.0</sup></sub>
 
-<p align="center">
-  <strong>Converse com um assistente de IA, descreva o que precisa, e receba datasets prontos para uso.</strong><br/>
-  Expansão de query com IA · Busca multi-fonte · Download paralelo · Scoring de relevância semântica
-</p>
+> *"Você não busca dados. Você caça evidências técnicas."*
 
-<p align="center">
-  <img alt="Python" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white"/>
-  <img alt="Streamlit" src="https://img.shields.io/badge/Streamlit-1.37%2B-FF4B4B?style=flat-square&logo=streamlit&logoColor=white"/>
-  <img alt="Kaggle" src="https://img.shields.io/badge/Kaggle-20BEFF?style=flat-square&logo=kaggle&logoColor=white"/>
-  <img alt="Hugging Face" src="https://img.shields.io/badge/Hugging%20Face-FFD21E?style=flat-square&logo=huggingface&logoColor=black"/>
-  <img alt="Zenodo" src="https://img.shields.io/badge/Zenodo-024D8F?style=flat-square&logo=zenodo&logoColor=white"/>
-  <img alt="Groq" src="https://img.shields.io/badge/Groq%20AI-F55036?style=flat-square&logo=groq&logoColor=white"/>
-  <img alt="License" src="https://img.shields.io/badge/license-MIT-22C55E?style=flat-square"/>
-  <img alt="CI" src="https://github.com/mfidosjr/DataHunter/actions/workflows/ci.yml/badge.svg"/>
-</p>
+**DataHunter** é uma camada agêntica de descoberta e curadoria de dados técnicos, estruturada para preencher a lacuna entre a intenção de conhecimento e a localização de fontes de alta autoridade. Ele automatiza o ciclo de vida da pesquisa técnica, transformando buscas manuais em um pipeline governado, rastreável e qualificado por IA.
+
+O sistema opera sob o modelo de quatro verbos: **Interpretar · Refinar · Capturar · Qualificar**.
+
+Consulte o [CONOPS v1.0](docs/01-produto/CONOPS.md) para a baseline institucional do conceito de operação.
 
 ---
 
-## O que é
+## Sumário
 
-Data Hunter é uma aplicação Streamlit que **automatiza a descoberta e avaliação de datasets públicos**. Em vez de garimpar manualmente dezenas de portais, você descreve o tema em linguagem natural — o app refina sua intenção via chat, expande a query com IA, busca em quatro fontes simultaneamente, baixa os arquivos em paralelo e entrega um ranking por relevância semântica.
+- [Visão Geral](#visão-geral)
+- [O Problema](#o-problema)
+- [A Proposta (Pipeline Agêntico)](#a-proposta-pipeline-agêntico)
+- [Arquitetura de Referência em 8 Camadas](#arquitetura-de-referência-em-8-camadas)
+- [Fontes de Alta Autoridade](#fontes-de-alta-autoridade)
+- [Integração com o Ecossistema (PKGL)](#integração-com-o-ecossistema-pkgl)
+- [Guia de Início Rápido](#guia-de-início-rápido)
+- [Mapa de Documentação](#mapa-de-documentação)
+- [Direções de Evolução (Roadmap)](#direções-de-evolução-roadmap)
 
+---
+
+## Visão Geral
+
+O DataHunter não é um motor de busca genérico. Ele é um orquestrador de descoberta técnica que utiliza LLMs para expandir semânticamente uma demanda, consultar múltiplos silos de dados simultaneamente (Web, Kaggle, Hugging Face, Zenodo) e aplicar um scoring de autoridade e relevância baseado em evidências.
+
+---
+
+## O Problema
+
+A descoberta de datasets técnicos e evidências regulatórias sofre com:
+*   **Dispersão**: Dados estão espalhados em portais .gov, .edu e repositórios comunitários.
+*   **Ruído**: Motores de busca priorizam popularidade (SEO) sobre autoridade técnica.
+*   **Alucinação**: IAs generativas sozinhas muitas vezes inventam links ou fontes inexistentes.
+*   **Falta de Proveniência**: É difícil rastrear a origem exata e o licenciamento de um achado.
+
+---
+
+## A Proposta (Pipeline Agêntico)
+
+### Interpretar & Refinar
+O sistema usa um chat agêntico para sanar ambiguidades e expandir a query inicial em dezenas de variantes técnicas em múltiplos idiomas, garantindo cobertura total do domínio.
+
+### Capturar
+Executa buscas paralelas massivas em repositórios científicos e portais de dados abertos, validando a existência de cada link via protocolos de inspeção prévia.
+
+### Qualificar
+Aplica um modelo de scoring em três dimensões:
+1.  **Autoridade da Fonte**: Peso para domínios oficiais e acadêmicos.
+2.  **Relevância Semântica**: Comparação entre metadados técnicos e a intenção de busca original.
+3.  **Fidelidade Técnica**: Validação de esquemas e formatos de arquivos.
+
+---
+
+## Arquitetura de Referência em 8 Camadas
+
+O DataHunter segue o padrão **AIT Standard**, garantindo que cada funcionalidade esteja posicionada em uma camada de governança clara.
+
+```mermaid
+graph TD
+    EXP[Experiência: Interface de Curadoria / API Headless] --> ORQ
+    SEG[Segurança: Local-first / Filtro de Executáveis / ByoK] --> ORQ
+    ORQ[Orquestração: Pipeline Interpretar-Refinar-Capturar-Qualificar] --> ACA
+    ACA[Ação: Conectores Web, Kaggle, HF, Zenodo] --> CON
+    CON[Conhecimento: Sinais de Confronto / Metadados de Proveniência] --> DAT
+    MOD[Modelos: LLM para Expansão e Scoring Semântico] --> ORQ
+    DAT[Dados: Persistência SQLite / Cache de Auditoria] --> OPE
+    OPE[Operação: KPIs de Recall, Latência e Trace ID] --> EXP
 ```
-Você: "preciso de dados de emissores eletromagnéticos"
-App:  pergunta de refinamento → extrai keywords técnicas →
-      busca em Web + Kaggle + Zenodo + Hugging Face →
-      baixa, analisa e ranqueia por relevância semântica
-```
 
 ---
 
-## Fontes suportadas
+## Fontes de Alta Autoridade
 
-| Fonte | O que busca | Autenticação |
-|---|---|---|
-| 🌐 **Web (DuckDuckGo)** | Portais regulatórios (.gov, .edu, FCC, ANATEL, ITU), dados abertos | Não necessária |
-| 🏆 **Kaggle** | Datasets públicos com metadata rica (downloads, votos, licença) | `KAGGLE_USERNAME` + `KAGGLE_KEY` |
-| 🤗 **Hugging Face** | Datasets da comunidade de ML/IA | Opcional (`HF_TOKEN`) |
-| 🔬 **Zenodo** | Datasets científicos e de pesquisa (CERN Open Data) | Opcional (`ZENODO_TOKEN`) |
-
----
-
-## Pipeline
-
-```
-1. Chat com assistente IA (Groq llama-3.3-70b)
-   └─ Refinamento por perguntas → extração de keywords
-
-2. Expansão de query (Groq llama-3.3-70b)
-   └─ Gera 6+ variantes técnicas em EN/PT com vocabulário do domínio
-      (ex: EMI, EIRP, radiated emissions, spectrum monitoring...)
-
-3. Busca em paralelo nas 4 fontes
-   └─ Crawling paralelo de páginas com captura de contexto (título, meta)
-   └─ Links diretos para arquivos de dados priorizados
-
-4. Download paralelo (ThreadPoolExecutor)
-   └─ httpx com streaming · retry automático · limite de 80 MB por arquivo
-
-5. Análise paralela por dataset
-   ├─ Score de qualidade: completude, tamanho, % de nulos
-   ├─ Score de relevância token: sobreposição query ↔ colunas
-   ├─ Score de relevância IA: avaliação semântica via Groq (0–100)
-   └─ Threshold de corte: descarta datasets com relevância < 20
-
-6. Ranking e entrega
-   └─ Cards com scores · gráfico comparativo · download ZIP
-```
+| Fonte | Tipo | Foco |
+| --- | --- | --- |
+| 🌐 **Web Aberta** | Regulatórios | Portais .gov, .edu, FCC, ANATEL, ITU. |
+| 🏆 **Kaggle** | Data Science | Datasets estruturados com metadados de comunidade. |
+| 🤗 **Hugging Face** | AI/ML | Modelos e bases de dados para treinamento de IA. |
+| 🔬 **Zenodo** | Científico | Repositórios de pesquisa e dados acadêmicos (CERN). |
 
 ---
 
-## Funcionalidades
+## Integração com o Ecossistema (PKGL)
 
-- **Interface conversacional** — chat com histórico, geração de título de sessão, Enter para enviar
-- **Expansão de query inteligente** — vocabulário técnico do domínio injetado automaticamente no prompt (EMC, EMI, EIRP, espectro RF, DATASUS, INMET, NOAA...)
-- **Progresso ao vivo** — 4 contadores em tempo real (variantes, páginas, arquivos, datasets) + etapas expansíveis com sub-detalhes
-- **Contexto de página** — título e meta description de cada página são passados ao scorer de relevância
-- **Formatos científicos** — suporte a CSV, Excel, JSON, ZIP, Parquet, HDF5 (h5py), NetCDF (xarray)
-- **Histórico de buscas** — SQLite local com restauração de sessões anteriores
-- **Golden dataset** — suite de avaliação de recall com queries de referência para domínios técnicos
-- **CI/CD** — GitHub Actions com matrix Python 3.10/3.11/3.12
+O DataHunter é o principal provedor de **Sinais de Confronto** para o [PKGL (Personal Knowledge Governance Layer)](https://github.com/1-AI-DECISION-LAB/PKGL-personal-knowledge-governance-layer). Ele alimenta o grafo de conhecimento com evidências externas, permitindo que o PKGL detecte contradições ou valide aprendizados internos contra fontes globais de autoridade.
 
 ---
 
-## Como rodar
+## Guia de Início Rápido
 
-### 1. Clone o repositório
+### 1. Requisitos
+*   Python 3.10+
+*   Chaves de API para os provedores de inferência e fontes técnicas (detalhado em [ARQUITETURA-BASELINE](docs/03-arquitetura/ARQUITETURA-BASELINE.md)).
 
+### 2. Instalação
 ```bash
-git clone https://github.com/mfidosjr/DataHunter.git
+git clone https://github.com/AI-DECISION-LAB/DataHunter.git
 cd DataHunter
-```
-
-### 2. Instale as dependências
-
-```bash
 pip install -r requirements.txt
 ```
 
-### 3. Configure as variáveis de ambiente
-
-Crie um arquivo `.env` na raiz:
-
+### 3. Configuração
+Crie um arquivo `.env` com suas credenciais:
 ```env
-# Groq — expansão de query + scoring semântico + chat (gratuito em console.groq.com)
-GROQ_API_KEY="sua_chave_groq"
-
-# Kaggle — kaggle.com > Settings > API > Create New Token
-KAGGLE_USERNAME="seu_usuario"
-KAGGLE_KEY="sua_chave_kaggle"
-
-# Hugging Face — opcional, só para datasets privados
-HF_TOKEN=""
-
-# Zenodo — opcional, aumenta rate limit
-ZENODO_TOKEN=""
+GROQ_API_KEY="sua_chave"
+KAGGLE_USERNAME="seu_user"
+KAGGLE_KEY="sua_chave"
 ```
 
-> Sem as chaves, o app funciona: busca web e Zenodo permanecem ativas, e o scoring semântico cai para modo por keywords.
-
-### 4. Rode
-
+### 4. Execução
 ```bash
 streamlit run app.py
 ```
 
-Acesse em **http://localhost:8501**
+---
+
+## Mapa de Documentação
+
+| Camada | Documentos | Finalidade |
+| --- | --- | --- |
+| **01-Produto** | [CONOPS](docs/01-produto/CONOPS.md) | Visão, Conceito Operacional e Roadmap. |
+| **02-Requisitos** | [SRS](docs/02-requisitos/SRS.md) | Requisitos funcionais e técnicos. |
+| **03-Arquitetura** | [BASELINE](docs/03-arquitetura/ARQUITETURA-BASELINE.md) | Stack tecnológica e decisões de design. |
+| **11-Backlog** | [ROADMAP](docs/11-backlog/ROADMAP.md) | Fases de evolução e marcos técnicos. |
+| **12-Riscos** | [RISCOS.md](docs/12-riscos/RISCOS.md) | Matriz de riscos e mitigação. |
 
 ---
 
-## Avaliar a qualidade de busca (golden dataset)
+## Direções de Evolução (Roadmap)
 
-O projeto inclui uma suite de avaliação com queries de referência e fontes esperadas para domínios técnicos (emissores EM, espectro RF, EMC, clima, saúde):
-
-```bash
-# Avalia todas as queries de referência
-python tests/golden/evaluate.py
-
-# Avalia apenas a query de emissores eletromagnéticos
-python tests/golden/evaluate.py --id eme_01
-
-# Aumenta o K para avaliar mais resultados
-python tests/golden/evaluate.py --id eme_01 --k 30
-```
-
-O avaliador mede três dimensões por query:
-- **Cobertura de vocabulário** — % dos termos técnicos esperados que apareceram nas variantes geradas
-- **Recall de fontes** — % das fontes esperadas (FCC, ANATEL, ITU...) encontradas nos resultados
-- **Datasets conhecidos** — checklist ✓/✗ para cada dataset de referência
-
----
-
-## Arquitetura
-
-```
-app.py                    # UI Streamlit — orquestra o pipeline completo
-├── query_expander.py     # Expansão de query via Groq + vocabulário de domínio
-├── search.py             # Busca DuckDuckGo com priorização de fontes regulatórias
-├── validation.py         # Crawling paralelo com captura de contexto de página
-├── downloader.py         # Download streaming com retry (tenacity + httpx)
-├── kaggle_source.py      # Conector Kaggle (busca + download)
-├── huggingface_source.py # Conector Hugging Face (busca + download)
-├── zenodo_source.py      # Conector Zenodo (busca + download com filtro de tamanho)
-├── analyzer.py           # Scores de qualidade + relevância token + relevância IA
-├── semantic_analyzer.py  # Descrição semântica das colunas (Groq ou keywords)
-├── history.py            # Histórico de buscas em SQLite
-└── tests/
-    ├── test_*.py         # Testes unitários (pytest)
-    └── golden/
-        ├── queries.json  # Queries de referência com fontes e datasets esperados
-        └── evaluate.py   # Avaliador de recall para domínios técnicos
-```
-
----
-
-## Deploy no Streamlit Cloud
-
-1. Faça fork deste repositório
-2. No [Streamlit Community Cloud](https://streamlit.io/cloud), crie um novo app apontando para `app.py`
-3. Em **Settings > Secrets**, adicione as variáveis do `.env`
-4. Deploy
-
----
-
-## Tecnologias
-
-- [Python 3.10+](https://www.python.org/) · [Streamlit 1.37+](https://streamlit.io/)
-- [Groq](https://groq.com/) — llama-3.3-70b-versatile (chat e expansão) · llama-3.1-8b-instant (scoring rápido)
-- [Kaggle API](https://github.com/Kaggle/kaggle-api) · [Hugging Face Hub](https://huggingface.co/docs/huggingface_hub) · [Zenodo REST API](https://developers.zenodo.org/)
-- [ddgs](https://github.com/deedy5/ddgs) · [httpx](https://www.python-httpx.org/) · [tenacity](https://tenacity.readthedocs.io/)
-- [BeautifulSoup4](https://beautiful-soup-4.readthedocs.io/) · [Pandas](https://pandas.pydata.org/) · [Plotly](https://plotly.com/python/)
-- [h5py](https://www.h5py.org/) · [xarray](https://xarray.pydata.org/) · [pytest](https://pytest.org/)
+*   **Fase 1 (Atual)**: Baseline Operacional via Web/Kaggle e interface de curadoria.
+*   **Fase 2**: Lançamento do **DataHunter MCP Server** para integração com IDEs (Cursor/VSCode).
+*   **Fase 3**: Implementação de **Deep Scoring** (inspeção interna de colunas e estatísticas).
+*   **Fase 4**: Integração plena de Sinais de Confronto com o Grafo PKGL.
 
 ---
 
 <p align="center">
-  Feito com 🔎 para quem vive de dados
+  Feito com 🔎 pela <strong>AI Decision Lab</strong> para quem governa conhecimento.
 </p>
