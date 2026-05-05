@@ -363,3 +363,27 @@ A integração entre os sistemas deve garantir que toda descoberta externa seja 
 ---
 
 ## 12. Casos de Uso Operacionais
+
+Os casos de uso operacionais do DataHunter descrevem como o sistema é acionado para resolver o problema da descoberta de dados, tanto por humanos quanto por sistemas orquestradores. Eles detalham o gatilho, os componentes envolvidos e o valor entregue ao final do pipeline.
+
+### 12.1 Casos de Uso da Versão Atual (Baseline)
+
+| ID | Caso de Uso | Gatilho Típico | Componente Principal | Resultado Esperado | Fallback |
+| --- | --- | --- | --- | --- | --- |
+| **UC-01** | Busca de Dataset Técnico | Pesquisador digita intenção no Streamlit (ex: "dados de RF no Brasil"). | Orquestrador / Expansor | Ranking de datasets curados com scores de relevância e links. | Busca por palavras-chave puras (Web) se as APIs falharem. |
+| **UC-02** | Confronto de Conhecimento | PKGL envia demanda técnica para validar memória interna. | Orquestrador / Qualificador | Sinal de Confronto (Evidência/Gap) formatado para o PKGL. | Relatório de "Dados Não Localizados" após busca exaustiva. |
+| **UC-03** | Localização Regulátoria | Usuário busca tabelas ou documentos em portais .gov/.edu. | Agente Explorador (Web) | Lista de arquivos diretos e páginas de autoridade regulatória. | Sugestão de refinamento manual de termos de domínio. |
+| **UC-04** | Captura e Qualificação | Usuário seleciona item do ranking para inspeção local. | Agente de Captura | Arquivo baixado, descompressão e exibição de metadados ricos. | Alerta de limite de tamanho (>80MB) ou formato não suportado. |
+| **UC-05** | Auditoria de Precisão | Mantenedor executa suite de testes de recall técnico. | Operação / Golden Dataset | Relatório comparativo de Precisão/Recall vs Ground Truth técnico. | Log de instabilidade de modelos de IA (Groq/Llama). |
+
+### 12.2 Casos de Uso Candidatos para Evolução
+
+| ID | Caso de Uso | Valor Esperado | Motivo para Fase Posterior |
+| --- | --- | --- | --- |
+| **UC-F01** | MCP Server Nativo | Permitir que agentes externos (Claude/Cursor) usem o DataHunter como ferramenta. | Necessidade de estabilização do contrato de API de sinais. |
+| **UC-F02** | Deep Data Scoring | Analisar amostras internas dos arquivos (CSV/Parquet) para score de fidelidade. | Alto consumo de tokens e latência de processamento atual. |
+| **UC-F03** | Monitoramento de Gap | Notificar o PKGL quando novos dados de um domínio "vazio" surgirem na web. | Requer infraestrutura de agendamento e persistência de longo prazo. |
+
+---
+
+## 13. Cenários Operacionais
