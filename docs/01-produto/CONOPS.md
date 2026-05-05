@@ -664,15 +664,47 @@ As premissas são condições assumidas como verdadeiras para orientar o desenho
 
 ## 18. Restrições
 
-As restrições são limites técnicos e operacionais que moldam o design do sistema e não devem ser violadas sem revisão formal de arquitetura.
+Restrições são limites obrigatórios para a primeira entrega e para a evolução controlada do DataHunter. Diferente das premissas, elas não são hipóteses: devem ser tratadas como regras de contorno. Qualquer alteração relevante deve gerar decisão arquitetural, atualização de requisitos ou revisão de risco.
+
+### 18.1 Restrições de Escopo da Primeira Entrega
 
 | ID | Restrição |
 | --- | --- |
-| **RT-01** | O sistema não deve realizar o download de arquivos com extensões executáveis (.exe, .sh, .bin). |
-| **RT-02** | O volume máximo de captura por arquivo individual é de 80MB para preservar recursos de rede e disco. |
-| **RT-03** | A busca Web está restrita às políticas de crawling e rate limits do DuckDuckGo e sites de destino. |
-| **RT-04** | O sistema não deve persistir dados sensíveis ou segredos fora de variáveis de ambiente. |
-| **RT-05** | A interface inicial deve ser mantida em Streamlit para facilitar a prototipação e uso acadêmico. |
+| **RT-ESC-01** | A primeira entrega deve focar exclusivamente em descoberta via DuckDuckGo e Kaggle, sem suporte inicial a scraping de sites de acesso restrito. |
+| **RT-ESC-02** | O sistema não deve tentar realizar o download de arquivos que exijam autenticação manual (captcha) ou fluxos de subscrição paga. |
+| **RT-ESC-03** | A interface de usuário inicial deve ser mantida estritamente em Streamlit para garantir agilidade na validação operacional. |
+
+### 18.2 Restrições Tecnológicas
+
+| ID | Restrição |
+| --- | --- |
+| **RT-TEC-01** | O núcleo de orquestração deve permanecer independente de provedores de infraestrutura cloud proprietária (Cloud Agnostic). |
+| **RT-TEC-02** | O uso de SQLite local é mandatório para a persistência de metadados no MVP, visando simplicidade e portabilidade. |
+| **RT-TEC-03** | Toda integração com APIs de IA deve possuir mecanismos de timeout e fallback explícitos para evitar travamentos do orquestrador. |
+
+### 18.3 Restrições de Dados e Conhecimento
+
+| ID | Restrição |
+| --- | --- |
+| **RT-DAD-01** | Arquivos identificados como executáveis (.exe, .sh, .bin) ou scripts não devem ser processados ou baixados pelo sistema. |
+| **RT-DAD-02** | O limite de 80MB por download individual é mandatório para preservar a integridade da infraestrutura local do usuário. |
+| **RT-DAD-03** | Achados que não possuam URL de proveniência ou fonte verificável não devem ser incluídos nos rankings qualificados. |
+
+### 18.4 Restrições de Segurança, Privacidade e Conformidade
+
+| ID | Restrição |
+| --- | --- |
+| **RT-SEG-01** | Segredos, tokens e chaves de API não devem ser persistidos no banco de dados de histórico ou em logs operacionais. |
+| **RT-SEG-02** | O sistema deve respeitar as diretrizes de `robots.txt` e não deve contornar proteções de acesso impostas pelos sites de origem. |
+| **RT-SEG-03** | Os dados brutos baixados para fins de qualificação técnica devem ser tratados como temporários e limpos periodicamente. |
+
+### 18.5 Restrições de Integração
+
+| ID | Restrição |
+| --- | --- |
+| **RT-INT-01** | A saída de dados para o PKGL deve seguir rigorosamente o esquema JSON do "Contrato de Sinais de Confronto". |
+| **RT-INT-02** | Falhas de conexão em uma fonte específica (ex: Kaggle offline) não devem impedir a conclusão da busca nas demais fontes. |
+| **RT-INT-03** | O sistema não deve exigir privilégios de administrador do sistema operacional para sua execução padrão. |
 
 ---
 
