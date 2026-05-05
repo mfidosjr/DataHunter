@@ -243,3 +243,31 @@ As responsabilidades detalhadas de execução e os papéis técnicos de desenvol
 ---
 
 ## 8. Conceito de Sistema Multiagentes Gerenciados
+
+No DataHunter, os componentes do pipeline de descoberta são concebidos como **agentes gerenciados**. Isso significa que cada módulo funcional (expansão, busca, captura e qualificação) opera sob um escopo explícito, com limites operacionais definidos e sob a coordenação de um orquestrador central que garante a integridade e a rastreabilidade do processo de "caça" de dados.
+
+### 8.1 Princípios de Gerenciamento dos Agentes
+
+| Princípio | Aplicação Prática no DataHunter |
+| --- | --- |
+| **Escopo Explícito** | Cada agente atua exclusivamente em sua fase (ex: o Qualificador não realiza buscas na web). |
+| **Trilha de Auditoria** | Toda variante gerada, link encontrado e score atribuído deve ser registrado para conferência posterior. |
+| **Validação de Contrato** | A saída de um agente (ex: links do Explorador) deve ser validada antes de ser consumida pelo próximo (ex: Captura). |
+| **Resiliência e Fallback** | Falhas em conectores específicos ou modelos de IA não devem interromper o ciclo operacional das demais fontes. |
+| **Limites de Agência** | Agentes não possuem autonomia para alterar configurações de segurança ou custos de API sem autorização central. |
+
+### 8.2 Agentes e Componentes Previstos
+
+| Agente / Componente | Responsabilidade | Entradas Principais | Saídas Esperadas | Limites Operacionais |
+| --- | --- | --- | --- | --- |
+| **Orquestrador Central** | Coordenar o fluxo completo e gerenciar o estado da descoberta. | Demanda do usuário, Políticas de busca. | Ranking final, Logs de execução. | Não altera parâmetros de segurança ou limites globais. |
+| **Agente Expansor** | Transformar intenção em consultas técnicas multi-idioma. | Intenção core, Vocabulário de domínio. | Variantes técnicas (EN/PT). | Limitado a um range fixo de variantes por query. |
+| **Agente Explorador** | Localizar links e capturar metadados em silos globais. | Variantes de query, Fontes autorizadas. | Links de datasets, Metadados ricos. | Respeita rigorosamente rate limits e robots.txt. |
+| **Agente de Captura** | Realizar o download e descompressão de artefatos. | Links validados por tipo de arquivo. | Arquivos brutos (CSV, Parquet, etc). | Limite de tamanho por arquivo e validação de extensão. |
+| **Agente Qualificador** | Atribuir scores de relevância semântica e qualidade. | Metadados capturados, Intenção original. | Scores (0-100), Descrição semântica. | Baseia-se exclusivamente em evidência capturada. |
+
+O detalhamento dos contratos técnicos entre esses agentes será mantido em [03-arquitetura/CONTRATO-OPERACIONAL-DOS-AGENTES.md](../03-arquitetura/.gitkeep).
+
+---
+
+## 9. Conceito Operacional do Orquestrador
