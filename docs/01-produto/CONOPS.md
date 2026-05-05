@@ -150,3 +150,35 @@ O sistema processa e transforma as seguintes categorias de informação:
 ---
 
 ## 4. Ambiente Atual
+
+Atualmente, a descoberta de datasets técnicos e científicos (ex: dados de emissores eletromagnéticos, saúde pública ou clima) é um processo predominantemente manual, fragmentado e realizado em silos. O pesquisador ou cientista de dados precisa navegar individualmente por múltiplos portais, validar links, baixar arquivos e avaliar a relevância técnica de forma artesanal.
+
+| Limitação | Impacto |
+| --- | --- |
+| **Busca Fragmentada** | Alto esforço manual para consultar Kaggle, Hugging Face, Zenodo e portais .gov separadamente. |
+| **Baixo Recall Técnico** | Consultas simples não capturam variações terminológicas ou sinônimos técnicos em EN/PT. |
+| **Avaliação Cega** | O usuário precisa baixar e processar o arquivo para entender se o conteúdo é realmente relevante. |
+| **Inexistência de Scoring** | Resultados são ordenados por popularidade ou data, ignorando a aderência semântica à intenção. |
+| **Dificuldade de Proveniência** | Perda de rastro sobre a origem, licença e confiabilidade do dado no momento da coleta. |
+| **Isolamento Sistêmico** | Impossibilidade de integração com orquestradores (ex: PKGL) para validação automática de conhecimento. |
+
+---
+
+## 5. Justificativa para Mudança
+
+O DataHunter transforma o "garimpo manual" de dados em uma **capacidade operacional de caça assistida**. A justificativa para a mudança reside na necessidade de escala (lidar com o volume de dados abertos), precisão (filtro semântico) e integração (servir ao ecossistema de governança).
+
+| Necessidade Identificada | Resposta Operacional do DataHunter |
+| --- | --- |
+| **Centralizar a Descoberta** | Orquestrador de busca paralela que consolida múltiplas fontes em uma única interface/API. |
+| **Injetar Inteligência de Domínio** | Engine de expansão de query que utiliza LLMs para garantir que o "alvo" seja encontrado. |
+| **Qualificar antes do Consumo** | Uso de Scoring Semântico para filtrar ruído e entregar apenas o que é tecnicamente útil. |
+| **Garantir Rastreabilidade** | Registro automático de metadados ricos, fontes e licenças desde o momento da captura. |
+| **Habilitar o Confronto Externo** | Fornecimento de sinais e evidências para validar o conhecimento interno de sistemas parceiros. |
+| **Medir Eficácia de Busca** | Suite de avaliação (Golden Dataset) para garantir melhoria contínua da precisão da busca. |
+
+Os requisitos funcionais detalhados desta justificativa são mantidos em [02-requisitos/README.md](../02-requisitos/.gitkeep).
+
+---
+
+## 6. Ambiente Proposto
