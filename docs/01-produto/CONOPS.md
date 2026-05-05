@@ -271,3 +271,35 @@ O detalhamento dos contratos técnicos entre esses agentes será mantido em [03-
 ---
 
 ## 9. Conceito Operacional do Orquestrador
+
+O Orquestrador do DataHunter é o núcleo de inteligência que coordena o pipeline de descoberta técnica. Ele não é apenas um executor sequencial de scripts, mas o componente responsável por gerenciar a complexidade da expansão semântica, a execução paralela massiva e a consolidação de evidências multimodais (web, arquivos e APIs).
+
+### 9.1 Processamento por Complexidade (Sistema 1 e 2)
+
+O orquestrador adota uma lógica de bifurcação operacional baseada na clareza da demanda:
+*   **Caminho Direto (Sistema 1)**: Para consultas com termos técnicos explícitos e fontes já conhecidas. O orquestrador minimiza o uso de LLM na fase de refinamento e prioriza a velocidade de captura.
+*   **Caminho Profundo (Sistema 2)**: Para intenções em linguagem natural ou domínios novos. O sistema ativa o diálogo de interpretação e a engine de expansão semântica para garantir que nenhum dado relevante seja ignorado por falta de vocabulário técnico.
+
+### 9.2 Grafo Operacional de Alto Nível
+
+```text
+START
+  -> Interpretar: Extração de intenção via chat ou contrato PKGL
+  -> Decidir Rota: Avaliação de complexidade e necessidade de expansão
+  -> Refinar: Geração de variantes técnicas (EN/PT) e injeção de domínio
+  -> Disparar Captura: Orquestração paralela de agentes exploradores
+  -> Monitorar: Gestão de rate limits, timeouts e integridade de download
+  -> Qualificar: Execução de scoring semântico e estrutural
+  -> Consolidar: Geração de ranking curado e relatório de evidências
+END
+```
+
+### 9.3 Decisões Críticas de Orquestração
+
+*   **Priorização de Fontes**: O orquestrador aplica uma "heurística de autoridade", priorizando resultados de portais governamentais (.gov), acadêmicos (.edu) e repositórios científicos (Zenodo/HF) no ranking final.
+*   **Gestão de Recursos**: Limita o paralelismo (default 10 threads) e o tamanho total de captura por sessão (80MB/arquivo) para garantir a estabilidade operacional em ambientes locais.
+*   **Formatação de Sinais**: Quando operando em modo "Serviço" para o PKGL, o orquestrador traduz os achados em "Sinais de Confronto", estruturados para alimentar diretamente os motores de validação de conhecimento do orquestrador parceiro.
+
+---
+
+## 10. Integração com Fontes de Dados (Kaggle/HF/Zenodo/Web)
