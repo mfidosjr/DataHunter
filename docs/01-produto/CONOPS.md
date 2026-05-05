@@ -303,3 +303,32 @@ END
 ---
 
 ## 10. Integração com Fontes de Dados (Kaggle/HF/Zenodo/Web)
+
+O DataHunter integra silos globais de dados abertos para permitir uma descoberta unificada e qualificada. Diferente de buscadores genéricos, a integração ocorre sob demanda através de conectores especializados que traduzem a intenção refinada em requisições nativas para cada repositório, garantindo a captura de metadados ricos e proveniência.
+
+### 10.1 Conectores e Repositórios Autorizados
+
+| Fonte | Tipo | Método de Integração | Papel Operacional |
+| --- | --- | --- | --- |
+| **Web (DuckDuckGo)** | Geral | Scraping de busca + Crawling de contexto | Descoberta de portais regulatórios (.gov), acadêmicos (.edu) e dados abertos dispersos. |
+| **Kaggle** | Datasets | Kaggle REST API (`kaggle-api`) | Acesso a datasets curados com estatísticas de download, votos e licenças explícitas. |
+| **Hugging Face** | ML/IA | `huggingface-hub` API | Recuperação de datasets voltados para treinamento de modelos, benchmarks e NLP. |
+| **Zenodo** | Científico | Zenodo REST API | Localização de dados de pesquisa, papers científicos e benchmarks acadêmicos (CERN/OpenAIRE). |
+
+### 10.2 Princípios de Integração de Fontes
+
+| Princípio | Aplicação no DataHunter |
+| --- | --- |
+| **Metadado antes de Download** | O sistema valida a descrição semântica e o título antes de iniciar o custo de captura do arquivo bruto. |
+| **Preservação de Licença** | Tentativa obrigatória de extração da licença de uso (ex: CC‑BY, MIT, GPL) para garantir conformidade. |
+| **Polidez e Rate Limit** | Implementação de retries exponenciais e respeito aos limites das APIs de terceiros para evitar bloqueios. |
+| **Fallback Transparente** | Se uma fonte falha ou não possui credencial, o orquestrador a ignora sem interromper o fluxo das demais. |
+| **Interoperabilidade de Formatos** | Priorização de formatos abertos e estruturados: CSV, JSON, Parquet, NetCDF, HDF5 e ZIP. |
+
+### 10.3 Gestão de Credenciais e Segurança
+
+As credenciais para fontes autenticadas (Kaggle Key, HF Token, Zenodo Token) são gerenciadas via variáveis de ambiente ou cofre de segredos local. O sistema valida a presença das chaves no início da sessão e ajusta as capacidades dos agentes de captura dinamicamente.
+
+---
+
+## 11. Integração com PKGL (Sinais de Confronto)
