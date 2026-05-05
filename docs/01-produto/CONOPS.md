@@ -332,3 +332,34 @@ As credenciais para fontes autenticadas (Kaggle Key, HF Token, Zenodo Token) sã
 ---
 
 ## 11. Integração com PKGL (Sinais de Confronto)
+
+O DataHunter atua como o **motor de confronto externo** para o ecossistema PKGL. Esta integração permite que a governança de conhecimento não fique restrita ao que é produzido em sessões isoladas, mas seja continuamente validada contra evidências reais do mundo técnico e científico.
+
+### 11.1 O Conceito de Sinal de Confronto
+
+Um "Sinal de Confronto" gerado pelo DataHunter para o PKGL é um artefato estruturado que contém mais do que links; ele fornece o substrato para a validação de confiança:
+
+| Componente do Sinal | Função Operacional no PKGL |
+| --- | --- |
+| **Evidência Corroborativa** | Metadados e amostras que confirmam uma premissa ou memória interna. |
+| **Ponto de Divergência** | Dados que contradizem o conhecimento interno (ex: novas versões, métricas conflitantes). |
+| **Gaps de Disponibilidade** | Registro de que, após busca exaustiva, nenhum dado foi localizado para aquele domínio. |
+| **Confidence Score** | Métrica (0-100) baseada na autoridade da fonte e precisão do scoring semântico. |
+| **Search Trace ID** | Identificador que permite ao PKGL rastrear exatamente como aquela evidência foi "caçada". |
+
+### 11.2 Fluxo Operacional Sistêmico
+
+O ciclo de integração segue o modelo de **Demanda como Serviço**:
+
+1.  **Gatilho de Confronto**: O orquestrador do PKGL identifica uma dúvida técnica, um artefato de baixa confiança ou um agendamento de revisão e dispara uma requisição para o DataHunter.
+2.  **Execução em Background**: O DataHunter recebe a demanda e aciona seu pipeline agêntico (Interpretar -> Refinar -> Capturar -> Qualificar) em modo *headless*.
+3.  **Injeção de Evidências**: O ranking curado e os metadados são devolvidos ao PKGL no formato de `References`.
+4.  **Atualização Cognitiva**: O PKGL utiliza esses sinais para elevar o status de confiança de uma memória, marcar um conhecimento como obsoleto ou propor uma nova "Unidade de Conhecimento" baseada no achado externo.
+
+### 11.3 Contrato de Serviço e Auditoria
+
+A integração entre os sistemas deve garantir que toda descoberta externa seja auditável. No ambiente proposto, o DataHunter fornece ao PKGL não apenas o dado, mas a **justificativa do achado**, permitindo que o curador humano entenda por que aquela fonte foi considerada relevante para o confronto de conhecimento em questão.
+
+---
+
+## 12. Casos de Uso Operacionais
