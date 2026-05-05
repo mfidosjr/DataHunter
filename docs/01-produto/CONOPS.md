@@ -504,41 +504,68 @@ Esta seção consolida os requisitos operacionais essenciais para que o DataHunt
 
 ## 16. Segurança, Privacidade e Conformidade
 
-O DataHunter lida com a captura de dados de fontes globais, o que exige controles rígidos sobre proveniência, licenciamento e proteção de segredos. O sistema deve ser auditável e garantir que a descoberta de dados externos não comprometa a segurança da infraestrutura local ou a integridade da base cognitiva do ecossistema de governança.
+O DataHunter deve ser concebido com segurança, privacidade e governança desde o desenho inicial. Como o sistema atua na fronteira entre a necessidade interna de conhecimento e a captura de dados em fontes globais, sua superfície de risco abrange não apenas o armazenamento e APIs, mas também a integridade da proveniência, o respeito ao licenciamento e a proteção contra manipulação de intenções via IA.
+
+As diretrizes desta seção devem ser detalhadas nos documentos de suporte: requisitos testáveis no `docs/02-requisitos/SRS.md`, ameaças em `docs/08-seguranca-lgpd/ameacas/` e riscos em `docs/12-riscos/RISCOS.md`.
 
 ### 16.1 Princípios Obrigatórios
 
 | Princípio | Aplicação no DataHunter |
 | --- | --- |
-| **Gestão Segura de Segredos** | Chaves de API (Kaggle, Groq, HF) nunca são versionadas e permanecem protegidas no ambiente de execução (.env). |
-| **Transparência de Proveniência** | Todo arquivo ou sinal de confronto deve estar obrigatoriamente atrelado a uma URL/API de origem verificável. |
-| **Respeito aos Termos de Uso** | Conectores e crawlers devem respeitar rigorosamente o `robots.txt` e os rate limits das APIs de terceiros. |
-| **Isolamento de Captura** | Downloads são realizados em diretórios temporários isolados e validados (extensão/tamanho) antes de qualquer persistência. |
-| **Minimização de Superfície** | Bloqueio automático de arquivos potencialmente perigosos (executáveis, scripts) e limites de volume por sessão. |
+| **Local-first** | A orquestração, o ranking e o histórico de caça devem permanecer locais por padrão. |
+| **Proveniência** | Todo dado capturado deve possuir URL, API de origem, timestamp e variante de busca rastreável. |
+| **Menor Privilégio** | Conectores e agentes de captura devem possuir permissões restritas ao escopo da tarefa atual. |
+| **Minimização** | Somente metadados e amostras estritamente necessários para o scoring devem ser processados. |
+| **Supervisão Humana** | Downloads de grande volume ou fontes de baixa autoridade exigem validação explícita. |
+| **Reversibilidade** | Ações de limpeza de cache ou deleção de histórico devem ser auditáveis e controladas. |
 
 ### 16.2 Dados Pessoais e Conformidade (LGPD)
 
-O DataHunter foca na descoberta de datasets técnicos e científicos. Caso dados pessoais sejam identificados nos metadados ou amostras capturadas, o sistema registra a fonte original para que o usuário ou orquestrador parceiro decida sobre o tratamento adequado (anonimização, descarte ou quarentena). O sistema não coleta dados pessoais dos usuários, exceto logs operacionais necessários para auditoria de sessão.
+| Controle | Requisito Operacional |
+| --- | --- |
+| **Finalidade** | A busca de dados deve estar vinculada a uma intenção técnica ou científica explícita. |
+| **Dados Sensíveis** | Identificação e sinalização de datasets que possam conter PII (Personally Identifiable Information). |
+| **Retenção** | Política de limpeza automática de arquivos temporários e caches de download não catalogados. |
+| **Rastreabilidade** | Localização imediata da origem de qualquer dado questionado por questões de privacidade ou licença. |
+| **Acesso** | Proteção de logs de busca que possam revelar estratégias ou áreas de pesquisa sensíveis. |
 
-### 16.3 Riscos de IA Generativa e Controles
+### 16.3 Segurança de IA Generativa e Agentes
 
 | Risco | Controle Esperado |
 | --- | --- |
-| **Prompt Injection** | Separação rigorosa entre as instruções do sistema e a intenção do usuário no Agente Expansor. |
-| **Alucinação de Fonte** | O sistema é proibido de "gerar" links sintéticos; cada link deve ser validado via requisição HTTP antes de entrar no ranking. |
-| **Vazamento de Demanda** | Intenções de busca sensíveis (ex: projetos internos do PKGL) não são compartilhadas entre diferentes sessões ou usuários. |
-| **Alucinação de Qualidade** | O score de relevância deve ser acompanhado de uma justificativa textual baseada em evidências reais do metadado. |
+| **Prompt Injection** | Isolamento entre as instruções de sistema do Agente Expansor e a intenção de busca do usuário. |
+| **Alucinação de Fonte** | Proibição de geração de links sintéticos; validação obrigatória de existência via HEAD request. |
+| **Vazamento de Demanda** | Proteção de intenções de busca sensíveis (ex: projetos confidenciais) em chamadas de API externas. |
+| **Agência Excessiva** | Bloqueio de navegação profunda em sites não autorizados ou execução de scripts de crawling agressivos. |
+| **Alucinação de Qualidade** | Exigência de que o Agente Qualificador aponte o trecho exato do metadado que justifica o score. |
+| **Dependência de Provedor** | Garantia de fallback para busca léxica (keywords) caso o provedor de LLM (Groq) falhe. |
 
 ### 16.4 O que o Sistema Não Deve Fazer
 
 O DataHunter não deve:
-*   Executar ou interpretar códigos contidos nos arquivos baixados.
-*   Compartilhar chaves de API entre diferentes sessões ou usuários.
-*   Ignorar licenças restritivas detectadas nos metadados originais.
-*   Operar como um proxy de navegação anônima para uso indevido de infraestrutura.
-*   Persistir dados brutos permanentemente sem ação explícita de catalogação do usuário.
+*   Transformar toda busca web em um sinal de confiança automática.
+*   Executar ou interpretar scripts e binários contidos nos arquivos capturados.
+*   Compartilhar ou persistir chaves de API em logs ou artefatos distribuídos.
+*   Ignorar metadados de licença (ex: CC‑BY‑ND) ao sugerir o uso de um dataset.
+*   Operar como um proxy anônimo para atividades não relacionadas à descoberta de dados.
+*   Consolidar rankings baseados puramente em popularidade, sem critério de autoridade (.gov/.edu).
 
-As diretrizes detalhadas de segurança e riscos residuais são mantidas nos documentos de suporte em `docs/08-seguranca-lgpd/` e `docs/12-riscos/`.
+### 16.5 Incidentes e Auditoria
+
+Eventos de falha de conector, detecção de arquivos maliciosos, vazamento de demanda ou erro grave de qualificação devem ser registrados e classificados. Cada incidente deve permitir reconstruir:
+*   A intenção original que disparou a caça.
+*   As variantes de busca geradas pela IA.
+*   Os conectores e agentes envolvidos na falha.
+*   A URL/Fonte externa que causou o alerta ou incidente.
+
+### 16.6 Métricas de Segurança e Governança
+
+| Métrica | Finalidade |
+| --- | --- |
+| **% de Fontes com Proveniência** | Medir a auditabilidade da base de achados. |
+| **Bloqueios por Extensão/Tamanho** | Avaliar a eficácia dos filtros preventivos de captura. |
+| **Incidentes de IA (Alucinação)** | Monitorar casos onde links gerados pela IA não foram validados. |
+| **Uso de API com Política Ativa** | Garantir que 100% das chamadas externas seguem as regras de escopo. |
 
 ---
 
