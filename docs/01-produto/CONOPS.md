@@ -2,17 +2,17 @@
 
 ## DataHunter
 
-**Arquitetura-alvo:** Python + Streamlit + Groq + DuckDuckGo + Kaggle/HF/Zenodo
-**Padrão de referência:** Arquitetura de IA em 8 camadas
-**Tipo de sistema:** Sistema de Descoberta e Curadoria de Dados (AI-powered)
-**Versão:** 6.9
+**Arquitetura-alvo:** Ecossistema agêntico local-first (detalhado em [ARQUITETURA-BASELINE](../03-arquitetura/ARQUITETURA-BASELINE.md)).
+**Padrão de referência:** Arquitetura de IA em 8 camadas (AIT Standard).
+**Tipo de sistema:** Sistema de Descoberta, "Caça" e Curadoria de Dados (AI-powered).
+**Versão:** 1.0 (Baseline Conceitual)
 **Status:** Baseline operacional / Documento de governança
-**Classificação:** Pesquisa e Descoberta Técnica
-**Canal inicial:** Streamlit Web UI
-**Canal futuro:** API de Integração / MCP Server
-**Domínio:** Descoberta de Datasets e Curadoria de Conhecimento Externo
-**Escopo inicial:** Busca multi-fonte, Expansão semântica e Ranking de relevância
-**Público-alvo:** Pesquisadores, Data Scientists e Sistemas de IA (PKGL)
+**Classificação:** Pesquisa, Descoberta Técnica e Apoio à Decisão.
+**Canais Iniciais:** Interface de Curadoria (Web) e API Headless (Sistêmica).
+**Canais Futuros:** Model Context Protocol (MCP) Server / Extensões de IDE.
+**Domínio:** Descoberta de Datasets e Curadoria de Conhecimento Externo para Ecossistemas de IA.
+**Escopo:** Orquestração de busca técnica, Expansão semântica e Ranking de autoridade.
+**Público-alvo:** Pesquisadores, Engenheiros de Dados e Orquestradores de Conhecimento (PKGL).
 
 > **Como usar este documento:** O CONOPS descreve como o DataHunter é usado, operado e governado do ponto de vista de seus usuários (humanos e sistêmicos). Ele serve como a ponte entre a necessidade de descoberta de dados e a arquitetura técnica de 8 camadas.
 
@@ -46,9 +46,10 @@ A solução é concebida sob a arquitetura de oito camadas, garantindo que o pro
 | 18 | [Restrições](#18-restrições) |
 | 19 | [Critérios de Sucesso do MVP](#19-critérios-de-sucesso-do-mvp) |
 | 20 | [Roteiro Operacional (Roadmap)](#20-roteiro-operacional-roadmap) |
-| 21 | [Questões Abertas e Decisões Pendentes](#21-questões-abertas-e-decisões-pendentes) |
+| 21 | [Questões Abertas](#21-questões-abertas-e-decisões-pendentes) |
+| — | [Pilha Tecnológica (Stack)](../03-arquitetura/ARQUITETURA-BASELINE.md) |
 | 22 | [Conclusão](#22-conclusão) |
-| — | [Rastreabilidade Documental](#rastreabilidade-documental-do-conops) |
+| — | [Matriz de Rastreabilidade](#rastreabilidade-documental-do-conops) |
 
 ---
 
@@ -463,10 +464,10 @@ Esta seção consolida os requisitos operacionais essenciais para que o DataHunt
 
 | ID | Requisito Operacional |
 | --- | --- |
-| **REQ-EXP-01** | O sistema deve permitir ao usuário inserir demandas técnicas em linguagem natural e visualizar rankings curados. |
+| **REQ-EXP-01** | O sistema deve permitir ao usuário inserir demandas técnicas em linguagem natural e visualizar rankings curados através de uma interface de curadoria dedicada. |
 | **REQ-EXP-02** | Deve exibir feedback em tempo real sobre o progresso das buscas paralelas e o status de cada conector de fonte. |
 | **REQ-EXP-03** | Deve possibilitar a visualização detalhada de metadados e a seleção manual de arquivos para download. |
-| **REQ-EXP-04** | Deve oferecer uma interface de saída JSON estruturada para integração sistêmica com o PKGL (modo headless). |
+| **REQ-EXP-04** | Deve oferecer uma interface de saída estruturada para integração sistêmica com o PKGL (modo headless). |
 | **REQ-EXP-05** | Deve suportar um chat de refinamento para sanar ambiguidades antes do disparo da captura massiva. |
 
 ### 15.2 Camada de Segurança
@@ -474,7 +475,7 @@ Esta seção consolida os requisitos operacionais essenciais para que o DataHunt
 | ID | Requisito Operacional |
 | --- | --- |
 | **REQ-SEG-01** | O sistema deve operar local-first por padrão, mantendo chaves, histórico e rankings no ambiente do usuário. |
-| **REQ-SEG-02** | Deve proteger segredos e tokens de APIs externas (Groq, Kaggle) fora de arquivos versionados e logs operacionais. |
+| **REQ-SEG-02** | Deve proteger segredos e tokens de serviços externos fora de arquivos versionados e logs operacionais. |
 | **REQ-SEG-03** | Deve implementar bloqueio automático para arquivos executáveis (.exe, .sh) ou de procedência duvidosa. |
 | **REQ-SEG-04** | Deve registrar obrigatoriamente a proveniência e o licenciamento de cada dado capturado como requisito de governança. |
 | **REQ-SEG-05** | Deve validar permissões e integridade de chaves antes de iniciar orquestrações que gerem custos de tokens. |
@@ -493,7 +494,7 @@ Esta seção consolida os requisitos operacionais essenciais para que o DataHunt
 
 | ID | Requisito Operacional |
 | --- | --- |
-| **REQ-ACA-01** | O sistema deve integrar conectores nativos para DuckDuckGo, Kaggle, Hugging Face e Zenodo. |
+| **REQ-ACA-01** | O sistema deve integrar conectores nativos para motores de busca web e repositórios de dados técnicos (Kaggle, Hugging Face, Zenodo). |
 | **REQ-ACA-02** | Deve realizar a captura de metadados técnicos brutos (título, descrição, tags) de cada fonte identificada. |
 | **REQ-ACA-03** | Deve aplicar um teto mandatório de download (default 80MB) para evitar esgotamento de recursos locais. |
 | **REQ-ACA-04** | Deve suportar captura via streaming para arquivos estruturados, permitindo validação prévia de cabeçalhos. |
@@ -513,17 +514,17 @@ Esta seção consolida os requisitos operacionais essenciais para que o DataHunt
 
 | ID | Requisito Operacional |
 | --- | --- |
-| **REQ-MOD-01** | O sistema deve utilizar LLMs de alta performance (Llama 3 via Groq) para tarefas de expansão semântica e qualificação. |
+| **REQ-MOD-01** | O sistema deve utilizar modelos de linguagem de alta performance para tarefas de expansão semântica e qualificação. |
 | **REQ-MOD-02** | Deve registrar o modelo utilizado, tokens consumidos e latência para cada etapa do pipeline agêntico. |
 | **REQ-MOD-03** | Deve suportar modo de fallback para busca léxica (palavras-chave) caso os serviços de IA estejam offline. |
 | **REQ-MOD-04** | O modelo de qualificação deve obrigatoriamente apontar evidências textuais nos metadados para justificar o score. |
-| **REQ-MOD-05** | Deve permitir a troca de provedores de IA (ex: Ollama local) caso a política de segurança do projeto mude. |
+| **REQ-MOD-05** | Deve permitir a troca de provedores de IA (Cloud ou Local) caso a política de segurança do projeto mude. |
 
 ### 15.7 Camada de Dados
 
 | ID | Requisito Operacional |
 | --- | --- |
-| **REQ-DAD-01** | O sistema deve persistir histórico de buscas, rankings e configurações em banco de dados SQLite local auditável. |
+| **REQ-DAD-01** | O sistema deve persistir histórico de buscas, rankings e configurações em camada de persistência local auditável. |
 | **REQ-DAD-02** | Deve gerenciar o cache temporário de arquivos baixados de forma segura, garantindo limpeza após análise. |
 | **REQ-DAD-03** | Deve suportar metadados de versão e integridade (hashes) para os artefatos técnicos capturados. |
 | **REQ-DAD-04** | Deve permitir a exportação da base de histórico para fins de backup ou auditoria de governança externa. |
@@ -623,7 +624,7 @@ As premissas são condições assumidas como verdadeiras para orientar o desenho
 
 | ID | Premissa |
 | --- | --- |
-| **PR-CAN-01** | A interface Streamlit é suficiente para a validação do conceito e uso humano no ciclo inicial. |
+| **PR-CAN-01** | A interface de curadoria via web é suficiente para a validação do conceito e uso humano no ciclo inicial. |
 | **PR-CAN-02** | A integração sistêmica via API Headless é a premissa para o funcionamento do ecossistema de governança. |
 | **PR-CAN-03** | O usuário precisa de visibilidade sobre o "raciocínio" de expansão da IA para confiar nos resultados do ranking. |
 
@@ -631,10 +632,10 @@ As premissas são condições assumidas como verdadeiras para orientar o desenho
 
 | ID | Premissa |
 | --- | --- |
-| **PR-TEC-01** | O provedor de LLM (Groq) manterá a latência baixa o suficiente para permitir expansão semântica em tempo real. |
-| **PR-TEC-02** | A arquitetura de conectores modulares permitirá a injeção de novas APIs de dados (ex: Zenodo) sem alteração no núcleo. |
-| **PR-TEC-03** | O uso de processamento paralelo (multi-threading) é mandatório para a viabilidade da busca em múltiplos silos. |
-| **PR-TEC-04** | Modelos de linguagem de tamanho médio (70B) são suficientes para tarefas de qualificação de metadados técnicos. |
+| **PR-TEC-01** | O provedor de inferência manterá a latência baixa o suficiente para permitir expansão semântica em tempo real. |
+| **PR-TEC-02** | A arquitetura de conectores modulares permitirá a injeção de novas APIs de dados sem alteração no núcleo. |
+| **PR-TEC-03** | O uso de processamento paralelo é mandatório para a viabilidade da busca em múltiplos silos. |
+| **PR-TEC-04** | Modelos de linguagem de tamanho médio (ex: 70B) são suficientes para tarefas de qualificação de metadados técnicos. |
 
 ### 17.4 Premissas de Dados e Conhecimento
 
@@ -642,7 +643,7 @@ As premissas são condições assumidas como verdadeiras para orientar o desenho
 | --- | --- |
 | **PR-DAD-01** | Os metadados brutos (título, descrição, tags) são substrato suficiente para um scoring semântico de alta precisão. |
 | **PR-DAD-02** | O licenciamento detectado é tratado como "Best Effort" e deve ser validado pelo curador humano no destino final. |
-| **PR-DAD-03** | O histórico de buscas locais servirá como base para evitar redundância de processamento e consumo de tokens. |
+| **PR-DAD-03** | O histórico de buscas servirá como base para evitar redundância de processamento e consumo de tokens de inferência. |
 
 ### 17.5 Premissas de Integração e Ecossistema
 
@@ -670,16 +671,16 @@ Restrições são limites obrigatórios para a primeira entrega e para a evoluç
 
 | ID | Restrição |
 | --- | --- |
-| **RT-ESC-01** | A primeira entrega deve focar exclusivamente em descoberta via DuckDuckGo e Kaggle, sem suporte inicial a scraping de sites de acesso restrito. |
+| **RT-ESC-01** | A primeira entrega deve focar exclusivamente em descoberta via web e repositórios abertos, sem suporte inicial a scraping de sites de acesso restrito. |
 | **RT-ESC-02** | O sistema não deve tentar realizar o download de arquivos que exijam autenticação manual (captcha) ou fluxos de subscrição paga. |
-| **RT-ESC-03** | A interface de usuário inicial deve ser mantida estritamente em Streamlit para garantir agilidade na validação operacional. |
+| **RT-ESC-03** | A interface de usuário inicial deve garantir agilidade na validação operacional através de frameworks leves de UI. |
 
 ### 18.2 Restrições Tecnológicas
 
 | ID | Restrição |
 | --- | --- |
 | **RT-TEC-01** | O núcleo de orquestração deve permanecer independente de provedores de infraestrutura cloud proprietária (Cloud Agnostic). |
-| **RT-TEC-02** | O uso de SQLite local é mandatório para a persistência de metadados no MVP, visando simplicidade e portabilidade. |
+| **RT-TEC-02** | O uso de uma camada de persistência local leve é mandatório para o MVP, visando simplicidade e portabilidade. |
 | **RT-TEC-03** | Toda integração com APIs de IA deve possuir mecanismos de timeout e fallback explícitos para evitar travamentos do orquestrador. |
 
 ### 18.3 Restrições de Dados e Conhecimento
@@ -768,7 +769,7 @@ O roteiro operacional organiza a evolução do DataHunter, partindo de uma prime
 | Fase | Objetivo Operacional | Capacidades Principais | Evidência de Saída |
 | --- | --- | --- | --- |
 | **Fase 0 - Fundação** | Consolidar a visão e governança inicial do projeto. | CONOPS, SRS inicial, Matriz de Riscos e Estrutura AIT. | Documentos sincronizados e commitados. |
-| **Fase 1 - Baseline** | Provar a busca multi-fonte (Web+Kaggle) via interface Streamlit. | Orquestrador Sistema 1/2, Conectores iniciais, Scoring semântico Groq. | Ranking curado com Trace ID e proveniência. |
+| **Fase 1 - Baseline** | Provar a busca multi-fonte via interface de curadoria inicial. | Orquestrador Sistema 1/2, Conectores iniciais, Scoring semântico via LLM. | Ranking curado com Trace ID e proveniência. |
 | **Fase 2 - Expansão** | Ampliar a base de descoberta para repositórios técnicos globais. | Conectores nativos para Hugging Face, Zenodo e portais governamentais. | Diversidade de fontes em buscas complexas. |
 | **Fase 3 - Sinais** | Estabelecer a integração sistêmica estável com o PKGL. | API Headless, payload de "Sinais de Confronto", contrato JSON. | Consumo automatizado de achados pelo grafo PKGL. |
 | **Fase 4 - MCP** | Tornar o DataHunter um provedor de contexto para o trabalho de dev/pesquisa. | Model Context Protocol (MCP) Server, integração com Cursor/Agentes. | Uso do DataHunter direto em IDEs e chats de IA externos. |
