@@ -839,9 +839,22 @@ Uma questão pode ser removida desta seção quando:
 
 ## 22. Conclusão
 
-O DataHunter preenche uma lacuna crítica na governança de sistemas de IA: a conexão confiável entre a necessidade de conhecimento e a descoberta de evidências externas. Ao transformar a busca manual e dispersa de dados em um pipeline agêntico, governado e qualificado, o sistema não apenas acelera a pesquisa técnica, mas fortalece a soberania cognitiva do usuário através do confronto sistemático de informações. 
+O DataHunter propõe uma camada agêntica e governada para a descoberta de evidências externas e datasets técnicos, essencial para o amadurecimento de ecossistemas de IA local-first. Sua finalidade não é ser apenas mais um motor de busca, mas sim o braço operacional de "caça" que preenche a lacuna entre a necessidade de conhecimento e a localização de fontes de alta autoridade (.gov, .edu, Zenodo, Kaggle).
 
-A baseline operacional estabelecida neste CONOPS garante que o DataHunter nasça com rastreabilidade, segurança e um propósito claro: **caçar dados para proteger e expandir a verdade operacional.**
+A tese central deste CONOPS é que, em um ambiente de governança cognitiva (liderado pelo PKGL), a descoberta de dados não pode ser um processo manual, disperso e sem proveniência. Sem o DataHunter, pesquisadores e sistemas de IA permanecem limitados ao conhecimento já persistido ou a buscas web superficiais e alucinatórias. Com o DataHunter, a descoberta passa a ter ciclo de vida, score de relevância, rastro de auditoria (Trace ID) e integração sistêmica via Sinais de Confronto.
+
+O desenho operacional adotado separa a **Baseline Operacional** da ambição total do produto. A primeira entrega foca na eficácia da busca multi-fonte via Streamlit, garantindo segurança (bloqueio de executáveis), transparência (justificativa de score) e interoperabilidade (JSON para PKGL). A solução completa, por sua vez, evolui para a integração massiva de repositórios globais, o fornecimento de contexto via Model Context Protocol (MCP) e o "Deep Scoring" baseado na inspeção real dos dados capturados.
+
+Essa evolução só é aceitável se preservar os princípios definidos neste documento: soberania local-first, priorização da autoridade sobre a popularidade, minimização de riscos de IA e rastreabilidade documental rigorosa. O DataHunter deve crescer como um serviço confiável sem perder o controle sobre a procedência de cada sinal que injeta no ecossistema.
+
+As próximas etapas recomendadas para o projeto são:
+*   Manter a sincronização contínua entre este CONOPS e os documentos de suporte (SRS, Riscos, Segurança).
+*   Transformar os critérios de sucesso e requisitos por camada em testes operacionais verificáveis.
+*   Estabelecer os contratos de dados e eventos para a API Headless de integração com o PKGL.
+*   Fechar as questões abertas priorizadas (Q-IDs) antes de avançar para a Fase 2 do roteiro.
+*   Preparar o terreno tecnológico para a implementação do MCP Server como padrão de distribuição.
+
+Conclui-se que o DataHunter deve ser tratado como uma infraestrutura crítica de descoberta técnica. Seu valor reside em permitir que humanos e agentes confrontem suas bases internas com a vastidão de dados externos de forma qualificada, reduzindo o risco de alucinação, aumentando a base de evidências e preservando a soberania cognitiva do usuário ao longo de todo o pipeline de pesquisa.
 
 ---
 
