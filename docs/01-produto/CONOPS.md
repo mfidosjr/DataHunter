@@ -448,4 +448,51 @@ Toda descoberta realizada pelo DataHunter deve manter um rastro imutável que pe
 
 ---
 
-## 15. Requisitos Operacionais
+## 15. Requisitos Operacionais por Camada
+
+Esta seção consolida os requisitos operacionais essenciais para que o DataHunter entregue seu conceito de descoberta e curadoria governada. Estes requisitos derivam das necessidades identificadas nas seções anteriores e orientam o desenvolvimento técnico nas 8 camadas.
+
+### 15.1 Camada de Experiência
+*   **REQ-EXP-01**: O sistema deve prover interface Web (Streamlit) para interação humana, permitindo input de demandas e visualização de rankings.
+*   **REQ-EXP-02**: Deve oferecer feedback em tempo real sobre o progresso das buscas paralelas e o status de cada conector.
+*   **REQ-EXP-03**: Deve permitir que o usuário selecione datasets específicos para download e inspeção detalhada de metadados.
+*   **REQ-EXP-04**: Deve suportar uma interface de API (JSON) para recebimento de demandas sistêmicas originadas pelo PKGL.
+
+### 15.2 Camada de Segurança
+*   **REQ-SEG-01**: O sistema deve gerenciar credenciais externas (Kaggle, Groq, Zenodo, HF) exclusivamente via variáveis de ambiente ou cofre de segredos.
+*   **REQ-SEG-02**: Deve validar a integridade das chaves de API antes de iniciar ciclos de orquestração complexos.
+*   **REQ-SEG-03**: Deve registrar a proveniência (URL de origem) para garantir que dados sensíveis ou protegidos por licenças restritivas sejam identificáveis.
+
+### 15.3 Camada de Orquestração
+*   **REQ-ORQ-01**: O orquestrador deve gerenciar o pipeline completo: Interpretar -> Refinar -> Capturar -> Qualificar.
+*   **REQ-ORQ-02**: Deve implementar lógica de paralelismo massivo (multi-threading) para consulta simultânea a múltiplos repositórios.
+*   **REQ-ORQ-03**: Deve gerenciar timeouts, rate limits e retries de forma a não paralisar o sistema em caso de falha de uma fonte isolada.
+
+### 15.4 Camada de Ação
+*   **REQ-ACA-01**: O sistema deve integrar conectores nativos para as APIs do Kaggle, Hugging Face, Zenodo e busca Web via DuckDuckGo.
+*   **REQ-ACA-02**: Deve suportar captura de arquivos em formatos técnicos (CSV, JSON, Parquet, ZIP) com validação de extensão.
+*   **REQ-ACA-03**: Deve implementar limite mandatório de tamanho de download (default 80MB) para proteção de infraestrutura local.
+
+### 15.5 Camada de Conhecimento
+*   **REQ-CON-01**: O sistema deve extrair metadados técnicos (título, descrição, colunas, licenças) de cada achado para alimentar o scoring.
+*   **REQ-CON-02**: Deve gerar "Sinais de Confronto" (Evidence/Gap/Divergence) para integração com o grafo de conhecimento do PKGL.
+*   **REQ-CON-03**: Deve manter um histórico persistente de buscas bem-sucedidas e falhas para otimização de consultas futuras.
+
+### 15.6 Camada de Modelos
+*   **REQ-MOD-01**: O sistema deve utilizar LLMs (Llama 3 via Groq) para tarefas de expansão semântica de query e atribuição de score de relevância.
+*   **REQ-MOD-02**: Deve suportar fallback automático para busca léxica (keywords) caso o provedor de IA esteja indisponível.
+*   **REQ-MOD-03**: Deve permitir a configuração de temperatura e sistema de instruções para garantir a precisão técnica da expansão de domínio.
+
+### 15.7 Camada de Dados
+*   **REQ-DAD-01**: O sistema deve persistir metadados e rankings em banco de dados SQLite local auditável.
+*   **REQ-DAD-02**: Deve manter cache temporário de arquivos baixados, garantindo limpeza após o encerramento da sessão ou análise.
+*   **REQ-DAD-03**: Deve registrar o `trace_id` de cada caçada, associando intenção, variantes, links e scores finais.
+
+### 15.8 Camada de Operação
+*   **REQ-OPE-01**: O sistema deve monitorar e expor métricas de latência, volume de tokens consumidos e eficácia de descoberta (recall).
+*   **REQ-OPE-02**: Deve permitir a execução de suites de teste automatizadas contra um "Golden Dataset" para validação de precisão.
+*   **REQ-OPE-03**: Deve gerar alertas operacionais claros em caso de esgotamento de créditos de API ou bloqueios por rate limit.
+
+---
+
+## 16. Segurança, Privacidade e Conformidade
