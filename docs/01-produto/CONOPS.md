@@ -226,3 +226,20 @@ Os requisitos não funcionais e a arquitetura detalhada deste ambiente proposto 
 ---
 
 ## 7. Atores e Stakeholders
+
+O DataHunter opera em um ecossistema que conecta necessidades humanas de pesquisa a processos automatizados de descoberta técnica. Seus stakeholders incluem desde o usuário final que busca datasets até sistemas orquestradores que dependem de suas evidências para processos de governança de conhecimento e tomada de decisão.
+
+| Ator/Stakeholder | Tipo | Interesse Principal | Responsabilidade no CONOPS |
+| --- | --- | --- | --- |
+| **Pesquisador / Data Scientist** | Usuário | Localizar datasets técnicos de alta relevância com baixo esforço manual. | Define as intenções de busca e avalia a utilidade final dos dados capturados. |
+| **Sistemas Multiagentes (ex: PKGL)** | Usuário Sistêmico | Obter evidências externas e sinais de confronto de forma confiável e automatizada. | Consome os resultados via contrato de integração e os incorpora no ciclo de governança cognitiva. |
+| **Analista de Domínio** | Usuário | Validar hipóteses técnicas contra a produção científica e regulatória global. | Realiza a curadoria técnica dos resultados e valida o vocabulário de domínio injetado. |
+| **Mantenedor de Tecnologia** | Técnico | Garantir a integridade dos conectores de API e a escalabilidade da busca paralela. | Implementação de novos conectores, gestão de segurança de chaves e sustentação da infraestrutura. |
+| **Governança / Compliance** | Governança | Garantir que a captura de dados respeite licenças, proveniência e limites de uso. | Define políticas de rastreabilidade, auditoria de captura e conformidade com termos das fontes. |
+| **Gestão Executiva** | Patrocínio | Medir a eficiência operacional na redução do tempo de descoberta e qualidade da informação. | Define prioridades estratégicas, novos domínios de expansão e orçamentos de infraestrutura/API. |
+
+As responsabilidades detalhadas de execução e os papéis técnicos de desenvolvimento são mantidos na [MATRIZ-RACI.md](../00-governanca/.gitkeep).
+
+---
+
+## 8. Conceito de Sistema Multiagentes Gerenciados
