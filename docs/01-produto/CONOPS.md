@@ -182,3 +182,47 @@ Os requisitos funcionais detalhados desta justificativa são mantidos em [02-req
 ---
 
 ## 6. Ambiente Proposto
+
+O ambiente proposto introduz o DataHunter como uma infraestrutura centralizada de **descoberta e curadoria técnica automatizada**. Ele atua como uma camada inteligente entre os repositórios globais de dados abertos e as necessidades de informação de humanos e agentes, substituindo o garimpo manual por um pipeline assistido por IA que qualifica o conhecimento externo antes de sua entrega.
+
+### 6.1 Visão Operacional Macro
+
+```text
+Usuário Humano / PKGL (Sistema Demandante)
+  -> 1. Interpretar: Interface Chat ou Contrato de Integração
+  -> 2. Refinar: Expansão semântica e injeção de domínio via LLM
+  -> 3. Capturar: Busca paralela massiva (Web, Kaggle, HF, Zenodo)
+  -> 4. Qualificar: Scoring semântico, estrutural e ranking de relevância
+  -> 5. Fornecer: Entrega de ranking curado, metadados ricos e sinais de confronto
+  -> Ecossistema: Modelagem ML, Pesquisa Técnica, Governança de Conhecimento
+```
+
+### 6.2 Princípios Operacionais
+
+| Princípio | Aplicação no DataHunter |
+| --- | --- |
+| **Qualificar antes do Consumo** | Nenhum dataset é entregue sem uma avaliação de relevância semântica contra a demanda. |
+| **Transparência de Proveniência** | O sistema preserva o rastro completo de origem, autor e licença de cada arquivo capturado. |
+| **Paralelismo por Padrão** | A arquitetura prioriza buscas e downloads simultâneos para reduzir a latência de descoberta. |
+| **IA como Filtro de Verdade** | O LLM é usado para validar a aderência do dado real à intenção, não para geração sintética. |
+| **Operação sob Demanda (SaaS)** | O sistema funciona como um fornecedor de sinais para orquestradores externos (ex: PKGL). |
+| **Melhoria via Golden Dataset** | A precisão da descoberta é medida continuamente contra queries de referência técnica. |
+
+### 6.3 Referência às 8 Camadas
+
+| Camada | Papel no Ambiente Proposto |
+| --- | --- |
+| **Experiência** | Interface Streamlit (humana) e API de sinais de confronto (sistêmica). |
+| **Segurança** | Gestão segura de chaves de API e isolamento de ambientes de download. |
+| **Orquestração** | Motor de expansão de query e coordenação do pipeline de busca paralela. |
+| **Ação** | Conectores especializados para Kaggle, HF, Zenodo e Web Crawling. |
+| **Conhecimento** | Algoritmos de scoring semântico e estrutural para qualificação de dados. |
+| **Modelos** | Uso de Llama 3 (via Groq) para interpretação de domínio e análise de metadados. |
+| **Dados** | SQLite para persistência de histórico e cache local de metadados capturados. |
+| **Operação** | Dashboard de performance de busca e suite de avaliação de recall (Golden Dataset). |
+
+Os requisitos não funcionais e a arquitetura detalhada deste ambiente proposto são mantidos em [03-arquitetura/README.md](../03-arquitetura/.gitkeep).
+
+---
+
+## 7. Atores e Stakeholders
