@@ -387,3 +387,29 @@ Os casos de uso operacionais do DataHunter descrevem como o sistema é acionado 
 ---
 
 ## 13. Cenários Operacionais
+
+Os cenários operacionais descrevem como o DataHunter se comporta em condições reais de uso, falha, degradação e integração. Eles definem as expectativas de resiliência do sistema e garantem que a descoberta de dados permaneça auditável mesmo em situações adversas.
+
+### 13.1 Cenários de Operação da Solução
+
+| ID | Cenário | Condição | Comportamento Esperado | Camadas Críticas | Evidência Esperada |
+| --- | --- | --- | --- | --- | --- |
+| **SC-01** | Operação Nominal | Demanda clara, APIs online e credenciais válidas. | Execução completa do pipeline com ranking de alta relevância e metadados. | Orquestração, Ação, Modelos | Ranking curado, logs de sucesso e arquivos capturados. |
+| **SC-02** | Demanda Ambígua | Intenção de busca genérica ou mal formulada. | O sistema solicita esclarecimento (Chat) ou gera variantes amplas para cobrir o campo. | Experiência, Orquestração | Pergunta de esclarecimento na UI e log de variantes amplas. |
+| **SC-03** | Falha de Conector | API do Kaggle, HF ou Zenodo retorna erro ou timeout. | O orquestrador isola a falha e prossegue a busca nas demais fontes disponíveis. | Ação, Orquestração | Log de erro do conector e resultado consolidado parcial. |
+| **SC-04** | Ausência de IA (Modo Degradado) | Chaves de LLM (Groq) não configuradas ou indisponíveis. | O sistema opera via busca por palavras-chave puras, desativando a expansão semântica. | Segurança, Orquestração | Alerta de "IA Offline" e histórico de busca simplificado. |
+| **SC-05** | Limite de Volume | Dataset localizado excede o limite de segurança (default 80MB). | O download é bloqueado preventivamente com notificação de "Tamanho Excedido". | Ação, Dados | Log de auditoria de tamanho e mensagem de alerta na UI. |
+| **SC-06** | Demanda PKGL (Headless) | Requisição recebida via contrato de integração sistêmica. | Execução silenciosa (sem UI) com saída exclusiva em JSON de Sinais de Confronto. | Experiência (API), Orquestração | Payload JSON estruturado e ID de rastreabilidade. |
+| **SC-07** | Busca Vazia (Gap) | Nenhuma fonte autorizada retorna resultados relevantes. | O sistema gera um relatório de "Gap de Disponibilidade" para o demandante. | Ação, Conhecimento | Log de busca exaustiva e classificação de gap no sinal. |
+
+### 13.2 Cenários de Degradação Controlada
+
+| Situação | Comportamento Aceitável | Comportamento Não Aceitável |
+| --- | --- | --- |
+| **Instabilidade de LLM** | Fallback para busca léxica (palavras-chave) e heurísticas locais. | Paralisar o pipeline ou exibir erros técnicos brutos ao usuário. |
+| **Rate Limit de Fontes** | Aumentar intervalo de retry (backoff) ou suspender fonte temporariamente. | Ignorar limites e causar bloqueio de IP ou revogação de chaves. |
+| **Espaço em Disco Crítico** | Limpeza automática de cache de capturas antigas e alerta de manutenção. | Falha silenciosa de escrita que corrompa o banco de histórico. |
+
+---
+
+## 14. Painel de Gestão, Observabilidade e Auditoria
