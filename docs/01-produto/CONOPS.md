@@ -413,3 +413,39 @@ Os cenários operacionais descrevem como o DataHunter se comporta em condições
 ---
 
 ## 14. Painel de Gestão, Observabilidade e Auditoria
+
+O DataHunter oferece transparência total sobre o processo de "caça" e qualificação de dados. O painel operacional (integrado nativamente na interface Streamlit e disponível via logs estruturados) permite que usuários, gestores e sistemas parceiros acompanhem a eficácia da descoberta e o custo da inteligência aplicada.
+
+### 14.1 Visões Mínimas do Painel
+
+| Visão | Pergunta Operacional Respondida | Público Principal |
+| --- | --- | --- |
+| **Monitor de Caça** | Quais fontes estão sendo consultadas em tempo real e qual o status dos conectores? | Usuário Final |
+| **Ranking Qualificado** | Quais datasets são os mais relevantes e quais evidências sustentam o score atribuído? | Pesquisador / Data Scientist |
+| **Log de Auditoria** | Qual variante de query localizou o dado e qual a licença original detectada? | Governança / Compliance |
+| **Consumo de IA** | Quantos tokens foram usados para interpretar e qualificar a demanda nesta sessão? | Gestão / Mantenedor |
+| **Status de Captura** | Quais downloads foram concluídos, bloqueados por tamanho ou falharam por rede? | Operação Técnica |
+
+### 14.2 Indicadores e Métricas (KPIs)
+
+*   **Eficiência de Recall**: Percentual de fontes autorizadas que retornaram achados úteis para a demanda.
+*   **Precisão de Scoring**: Média de relevância semântica dos Top 5 resultados do ranking.
+*   **Latência de Descoberta**: Tempo total decorrido entre a intenção original e a entrega do ranking curado.
+*   **Custo Operacional de IA**: Volume de tokens processados via Groq para tarefas de NLP por sessão.
+*   **Taxa de Sucesso de Captura**: Relação entre links identificados e arquivos efetivamente baixados e validados.
+
+### 14.3 Eventos de Observabilidade e Rastreabilidade
+
+O sistema registra e expõe eventos para cada transição de estado do orquestrador:
+*   **Variantes Geradas**: Registro das keywords e termos de domínio injetados pelo Agente Expansor.
+*   **Trilha de Origem**: Associação direta entre cada arquivo capturado e a URL/API de proveniência.
+*   **Decisões de Filtro**: Justificativa para o bloqueio de downloads (ex: tamanho, extensão não suportada).
+*   **Sinal de Saída**: Registro do payload enviado para o PKGL, incluindo o `search_trace_id`.
+
+### 14.4 Regras de Auditoria e Conformidade
+
+Toda descoberta realizada pelo DataHunter deve manter um rastro imutável que permita reconstruir o caminho da caça. Isso inclui a persistência da intenção original, o estado das APIs no momento da busca e o veredito do Agente Qualificador. O objetivo é garantir que a base cognitiva alimentada pelo DataHunter (como no caso do PKGL) possua evidências auditáveis de sua origem externa.
+
+---
+
+## 15. Requisitos Operacionais
