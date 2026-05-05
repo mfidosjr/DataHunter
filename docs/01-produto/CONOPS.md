@@ -1,4 +1,50 @@
-# CONOPS - DataHunter
+# CONOPS - Concept of Operations
+
+## DataHunter
+
+**Arquitetura-alvo:** Python + Streamlit + Groq + DuckDuckGo + Kaggle/HF/Zenodo
+**Padrão de referência:** Arquitetura de IA em 8 camadas
+**Tipo de sistema:** Sistema de Descoberta e Curadoria de Dados (AI-powered)
+**Versão:** 6.9
+**Status:** Baseline operacional / Documento de governança
+**Classificação:** Pesquisa e Descoberta Técnica
+**Canal inicial:** Streamlit Web UI
+**Canal futuro:** API de Integração / MCP Server
+**Domínio:** Descoberta de Datasets e Curadoria de Conhecimento Externo
+**Escopo inicial:** Busca multi-fonte, Expansão semântica e Ranking de relevância
+**Público-alvo:** Pesquisadores, Data Scientists e Sistemas de IA (PKGL)
+
+> **Como usar este documento:** O CONOPS descreve como o DataHunter é usado, operado e governado do ponto de vista de seus usuários (humanos e sistêmicos). Ele serve como a ponte entre a necessidade de descoberta de dados e a arquitetura técnica de 8 camadas.
+
+## Sumário Executivo
+
+O **DataHunter** é uma capacidade operacional de IA voltada para a automação da descoberta e qualificação de datasets técnicos e científicos. O sistema resolve o problema crítico da fragmentação e lentidão na localização de dados abertos, automatizando a tradução de intenções em linguagem natural para consultas técnicas complexas.
+
+A solução é concebida sob a arquitetura de oito camadas, garantindo que o processo de "caça" de dados seja auditável, rastreável e passível de integração sistêmica. Utilizando LLMs para expansão de query e scoring semântico, o DataHunter não apenas localiza arquivos, mas qualifica sua relevância real, atuando como um fornecedor estratégico de sinais externos para o ecossistema de governança de conhecimento (PKGL).
+
+## Sumário
+
+| # | Seção |
+| --- | --- |
+| 1 | [Visão e Motivação](#1-visão-e-motivação) |
+| 2 | [Modelo Operacional — Interpretar, Refinar, Capturar e Qualificar](#2-modelo-operacional--interpretar-refinar-capturar-e-qualificar) |
+| 3 | [Contexto Operacional](#3-contexto-operacional) |
+| 4 | [Ambiente Atual](#4-ambiente-atual) |
+| 5 | [Justificativa para Mudança](#5-justificativa-para-mudança) |
+| 6 | [Ambiente Proposto](#6-ambiente-proposto) |
+| 7 | [Atores e Stakeholders](#7-atores-e-stakeholders) |
+| 8 | [Conceito de Sistema Multiagentes Gerenciados](#8-conceito-de-sistema-multiagentes-gerenciados) |
+| 9 | [Conceito Operacional do Orquestrador](#9-conceito-operacional-do-orquestrador) |
+| 10 | [Integração com Fontes de Dados (Kaggle/HF/Zenodo/Web)](#10-integração-com-fontes-de-dados-kagglehfzenodoweb) |
+| 11 | [Integração com PKGL (Sinais de Confronto)](#11-integração-com-pkgl-sinais-de-confronto) |
+| 12 | [Casos de Uso Operacionais](#12-casos-de-uso-operacionais) |
+| 13 | [Cenários Operacionais](#13-cenários-operacionais) |
+| 14 | [Painel de Gestão, Observabilidade e Auditoria](#14-painel-de-gestão-observabilidade-e-auditoria) |
+| 15 | [Requisitos Operacionais](#15-requisitos-operacionais) |
+| 16 | [Segurança, Privacidade e Conformidade](#16-segurança-privacidade-e-conformidade) |
+
+---
+
 
 ## 1. Visão e Motivação
 
