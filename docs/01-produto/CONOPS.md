@@ -457,48 +457,85 @@ Toda descoberta realizada pelo DataHunter deve manter um rastro imutável que pe
 
 ## 15. Requisitos Operacionais por Camada
 
-Esta seção consolida os requisitos operacionais essenciais para que o DataHunter entregue seu conceito de descoberta e curadoria governada. Estes requisitos derivam das necessidades identificadas nas seções anteriores e orientam o desenvolvimento técnico nas 8 camadas.
+Esta seção consolida os requisitos operacionais essenciais para que o DataHunter entregue seu conceito de descoberta e curadoria governada. O objetivo é garantir que cada camada da arquitetura de IA contribua para a rastreabilidade, segurança e eficácia da descoberta de dados técnicos.
 
 ### 15.1 Camada de Experiência
-*   **REQ-EXP-01**: O sistema deve prover interface Web (Streamlit) para interação humana, permitindo input de demandas e visualização de rankings.
-*   **REQ-EXP-02**: Deve oferecer feedback em tempo real sobre o progresso das buscas paralelas e o status de cada conector.
-*   **REQ-EXP-03**: Deve permitir que o usuário selecione datasets específicos para download e inspeção detalhada de metadados.
-*   **REQ-EXP-04**: Deve suportar uma interface de API (JSON) para recebimento de demandas sistêmicas originadas pelo PKGL.
+
+| ID | Requisito Operacional |
+| --- | --- |
+| **REQ-EXP-01** | O sistema deve permitir ao usuário inserir demandas técnicas em linguagem natural e visualizar rankings curados. |
+| **REQ-EXP-02** | Deve exibir feedback em tempo real sobre o progresso das buscas paralelas e o status de cada conector de fonte. |
+| **REQ-EXP-03** | Deve possibilitar a visualização detalhada de metadados e a seleção manual de arquivos para download. |
+| **REQ-EXP-04** | Deve oferecer uma interface de saída JSON estruturada para integração sistêmica com o PKGL (modo headless). |
+| **REQ-EXP-05** | Deve suportar um chat de refinamento para sanar ambiguidades antes do disparo da captura massiva. |
 
 ### 15.2 Camada de Segurança
-*   **REQ-SEG-01**: O sistema deve gerenciar credenciais externas (Kaggle, Groq, Zenodo, HF) exclusivamente via variáveis de ambiente ou cofre de segredos.
-*   **REQ-SEG-02**: Deve validar a integridade das chaves de API antes de iniciar ciclos de orquestração complexos.
-*   **REQ-SEG-03**: Deve registrar a proveniência (URL de origem) para garantir que dados sensíveis ou protegidos por licenças restritivas sejam identificáveis.
+
+| ID | Requisito Operacional |
+| --- | --- |
+| **REQ-SEG-01** | O sistema deve operar local-first por padrão, mantendo chaves, histórico e rankings no ambiente do usuário. |
+| **REQ-SEG-02** | Deve proteger segredos e tokens de APIs externas (Groq, Kaggle) fora de arquivos versionados e logs operacionais. |
+| **REQ-SEG-03** | Deve implementar bloqueio automático para arquivos executáveis (.exe, .sh) ou de procedência duvidosa. |
+| **REQ-SEG-04** | Deve registrar obrigatoriamente a proveniência e o licenciamento de cada dado capturado como requisito de governança. |
+| **REQ-SEG-05** | Deve validar permissões e integridade de chaves antes de iniciar orquestrações que gerem custos de tokens. |
 
 ### 15.3 Camada de Orquestração
-*   **REQ-ORQ-01**: O orquestrador deve gerenciar o pipeline completo: Interpretar -> Refinar -> Capturar -> Qualificar.
-*   **REQ-ORQ-02**: Deve implementar lógica de paralelismo massivo (multi-threading) para consulta simultânea a múltiplos repositórios.
-*   **REQ-ORQ-03**: Deve gerenciar timeouts, rate limits e retries de forma a não paralisar o sistema em caso de falha de uma fonte isolada.
+
+| ID | Requisito Operacional |
+| --- | --- |
+| **REQ-ORQ-01** | O orquestrador deve coordenar o pipeline completo: Interpretar -> Refinar -> Capturar -> Qualificar. |
+| **REQ-ORQ-02** | Deve gerenciar o paralelismo entre múltiplos conectores web e API sem perda de integridade dos resultados. |
+| **REQ-ORQ-03** | Deve aplicar a lógica de bifurcação (Sistema 1 e 2) baseada na complexidade da intenção de busca. |
+| **REQ-ORQ-04** | Deve implementar gestão de timeouts e retries exponenciais para garantir resiliência contra falhas de fontes externas. |
+| **REQ-ORQ-05** | Deve gerar um `Search Trace ID` único para cada sessão, permitindo auditoria ponta-a-ponta dos achados. |
 
 ### 15.4 Camada de Ação
-*   **REQ-ACA-01**: O sistema deve integrar conectores nativos para as APIs do Kaggle, Hugging Face, Zenodo e busca Web via DuckDuckGo.
-*   **REQ-ACA-02**: Deve suportar captura de arquivos em formatos técnicos (CSV, JSON, Parquet, ZIP) com validação de extensão.
-*   **REQ-ACA-03**: Deve implementar limite mandatório de tamanho de download (default 80MB) para proteção de infraestrutura local.
+
+| ID | Requisito Operacional |
+| --- | --- |
+| **REQ-ACA-01** | O sistema deve integrar conectores nativos para DuckDuckGo, Kaggle, Hugging Face e Zenodo. |
+| **REQ-ACA-02** | Deve realizar a captura de metadados técnicos brutos (título, descrição, tags) de cada fonte identificada. |
+| **REQ-ACA-03** | Deve aplicar um teto mandatório de download (default 80MB) para evitar esgotamento de recursos locais. |
+| **REQ-ACA-04** | Deve suportar captura via streaming para arquivos estruturados, permitindo validação prévia de cabeçalhos. |
+| **REQ-ACA-05** | Deve respeitar as políticas de `robots.txt` e os limites de frequência (rate limits) impostos pelos provedores. |
 
 ### 15.5 Camada de Conhecimento
-*   **REQ-CON-01**: O sistema deve extrair metadados técnicos (título, descrição, colunas, licenças) de cada achado para alimentar o scoring.
-*   **REQ-CON-02**: Deve gerar "Sinais de Confronto" (Evidence/Gap/Divergence) para integração com o grafo de conhecimento do PKGL.
-*   **REQ-CON-03**: Deve manter um histórico persistente de buscas bem-sucedidas e falhas para otimização de consultas futuras.
+
+| ID | Requisito Operacional |
+| --- | --- |
+| **REQ-CON-01** | O sistema deve representar achados como objetos de conhecimento ricos em metadados de proveniência e confiança. |
+| **REQ-CON-02** | Deve gerar Sinais de Confronto (Evidência/Gap/Divergência) formatados para o grafo de conhecimento do PKGL. |
+| **REQ-CON-03** | Deve manter um histórico persistente de rankings e decisões para otimizar futuras caçadas no mesmo domínio. |
+| **REQ-CON-04** | Deve classificar a autoridade da fonte (Oficial/Gov, Acadêmica/Edu ou Comunitária) no cálculo do score final. |
+| **REQ-CON-05** | Deve extrair e catalogar informações de licenciamento para garantir conformidade no uso dos dados descobertos. |
 
 ### 15.6 Camada de Modelos
-*   **REQ-MOD-01**: O sistema deve utilizar LLMs (Llama 3 via Groq) para tarefas de expansão semântica de query e atribuição de score de relevância.
-*   **REQ-MOD-02**: Deve suportar fallback automático para busca léxica (keywords) caso o provedor de IA esteja indisponível.
-*   **REQ-MOD-03**: Deve permitir a configuração de temperatura e sistema de instruções para garantir a precisão técnica da expansão de domínio.
+
+| ID | Requisito Operacional |
+| --- | --- |
+| **REQ-MOD-01** | O sistema deve utilizar LLMs de alta performance (Llama 3 via Groq) para tarefas de expansão semântica e qualificação. |
+| **REQ-MOD-02** | Deve registrar o modelo utilizado, tokens consumidos e latência para cada etapa do pipeline agêntico. |
+| **REQ-MOD-03** | Deve suportar modo de fallback para busca léxica (palavras-chave) caso os serviços de IA estejam offline. |
+| **REQ-MOD-04** | O modelo de qualificação deve obrigatoriamente apontar evidências textuais nos metadados para justificar o score. |
+| **REQ-MOD-05** | Deve permitir a troca de provedores de IA (ex: Ollama local) caso a política de segurança do projeto mude. |
 
 ### 15.7 Camada de Dados
-*   **REQ-DAD-01**: O sistema deve persistir metadados e rankings em banco de dados SQLite local auditável.
-*   **REQ-DAD-02**: Deve manter cache temporário de arquivos baixados, garantindo limpeza após o encerramento da sessão ou análise.
-*   **REQ-DAD-03**: Deve registrar o `trace_id` de cada caçada, associando intenção, variantes, links e scores finais.
+
+| ID | Requisito Operacional |
+| --- | --- |
+| **REQ-DAD-01** | O sistema deve persistir histórico de buscas, rankings e configurações em banco de dados SQLite local auditável. |
+| **REQ-DAD-02** | Deve gerenciar o cache temporário de arquivos baixados de forma segura, garantindo limpeza após análise. |
+| **REQ-DAD-03** | Deve suportar metadados de versão e integridade (hashes) para os artefatos técnicos capturados. |
+| **REQ-DAD-04** | Deve permitir a exportação da base de histórico para fins de backup ou auditoria de governança externa. |
 
 ### 15.8 Camada de Operação
-*   **REQ-OPE-01**: O sistema deve monitorar e expor métricas de latência, volume de tokens consumidos e eficácia de descoberta (recall).
-*   **REQ-OPE-02**: Deve permitir a execução de suites de teste automatizadas contra um "Golden Dataset" para validação de precisão.
-*   **REQ-OPE-03**: Deve gerar alertas operacionais claros em caso de esgotamento de créditos de API ou bloqueios por rate limit.
+
+| ID | Requisito Operacional |
+| --- | --- |
+| **REQ-OPE-01** | O sistema deve disponibilizar um monitor de KPIs operacionais (Latência, Eficácia de Recall, Custo de IA). |
+| **REQ-OPE-02** | Deve permitir a execução de suites de teste de precisão automatizadas contra um "Golden Dataset" técnico. |
+| **REQ-OPE-03** | Deve gerar alertas claros para conectores de fontes offline ou chaves de API com erro recorrente. |
+| **REQ-OPE-04** | Deve garantir a reconstrução completa de qualquer ranking ou decisão a partir do Search Trace ID. |
 
 ---
 
