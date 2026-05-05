@@ -806,11 +806,34 @@ O DataHunter deve evoluir preservando os seguintes pilares:
 
 ## 21. Questões Abertas e Decisões Pendentes
 
-| ID | Questão | Impacto |
-| --- | --- | --- |
-| **Q-01** | Qual o melhor modelo de persistência para caches de datasets de longo prazo? | Afeta a camada de Dados e o custo de storage. |
-| **Q-02** | Suporte a modelos locais (Ollama) para qualificação em ambientes air-gapped. | Afeta a premissa de soberania total (Segurança). |
-| **Q-03** | Implementação de agentes de "deep research" que navegam em múltiplas camadas de links. | Afeta a latência e o risco de bloqueio de IP. |
+Questões abertas são decisões ainda não estabilizadas que podem afetar o escopo, a arquitetura, a segurança ou o roadmap do DataHunter. Elas não devem permanecer indefinidamente no CONOPS: cada questão precisa ter um destino documental, um critério de fechamento e, quando aplicável, um risco ou ADR associado.
+
+### 21.1 Questões Prioritárias
+
+| ID | Questão Aberta | Impacto se não Decidir | Destino da Decisão | Critério de Fechamento |
+| --- | --- | --- | --- | --- |
+| **Q-01** | Qual o melhor modelo de persistência para caches de datasets de longo prazo? | Afeta o custo de storage e a performance de re-ranking. | `docs/04-dados/` | Definição de política de cache e storage engine. |
+| **Q-02** | Suporte a modelos locais (Ollama) para qualificação em ambientes offline. | Afeta a premissa de soberania total e requisitos de hardware. | `docs/06-modelos/` | Validação de performance do Llama 3 local vs API. |
+| **Q-03** | Granularidade dos Sinais de Confronto enviados para o PKGL. | Afeta a utilidade dos achados para a curadoria do grafo. | `docs/09-integracoes/` | Contrato JSON finalizado e testado com o PKGL. |
+| **Q-04** | Implementação de agentes de "deep research" (multi-hop links). | Afeta a latência e o risco de bloqueio de IP/Rate limits. | `docs/05-agentes/` | Teste de viabilidade técnica e definição de profundidade. |
+| **Q-05** | Estratégia de gestão de custos de tokens para uso multiusuário. | Afeta a sustentabilidade financeira e cotas de uso. | `docs/10-operacao/` | Implementação de contador de tokens e limites por Trace ID. |
+
+### 21.2 Regras de Gestão das Questões
+
+| Regra | Aplicação |
+| --- | --- |
+| **Questão sem owner vira risco** | Se não houver responsável por fechar a decisão, ela deve ser registrada em `docs/12-riscos/RISCOS.md`. |
+| **Questão técnica vira ADR** | Se a decisão alterar a arquitetura ou contrato, deve gerar um *Architecture Decision Record* (ADR). |
+| **Questão de escopo vira backlog** | Se afetar a entrega de uma fase, deve ser registrada como item de backlog técnico. |
+| **Questão de segurança vira controle** | Se afetar privacidade ou exposição, deve gerar um novo controle em `docs/08-seguranca-lgpd/`. |
+
+### 21.3 Critérios para Remover uma Questão do CONOPS
+
+Uma questão pode ser removida desta seção quando:
+1.  A decisão final estiver formalmente registrada no documento de destino indicado.
+2.  Houver um responsável (owner) claro pela implementação da decisão.
+3.  Os impactos em requisitos, arquitetura e riscos tiverem sido propagados para os documentos correlatos.
+4.  A decisão puder ser verificada por evidência técnica ou teste operacional.
 
 ---
 
