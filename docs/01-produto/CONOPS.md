@@ -42,6 +42,13 @@ A solução é concebida sob a arquitetura de oito camadas, garantindo que o pro
 | 14 | [Painel de Gestão, Observabilidade e Auditoria](#14-painel-de-gestão-observabilidade-e-auditoria) |
 | 15 | [Requisitos Operacionais](#15-requisitos-operacionais) |
 | 16 | [Segurança, Privacidade e Conformidade](#16-segurança-privacidade-e-conformidade) |
+| 17 | [Premissas](#17-premissas) |
+| 18 | [Restrições](#18-restrições) |
+| 19 | [Critérios de Sucesso do MVP](#19-critérios-de-sucesso-do-mvp) |
+| 20 | [Roteiro Operacional (Roadmap)](#20-roteiro-operacional-roadmap) |
+| 21 | [Questões Abertas e Decisões Pendentes](#21-questões-abertas-e-decisões-pendentes) |
+| 22 | [Conclusão](#22-conclusão) |
+| — | [Rastreabilidade Documental](#rastreabilidade-documental-do-conops) |
 
 ---
 
@@ -535,4 +542,94 @@ As diretrizes detalhadas de segurança e riscos residuais são mantidas nos docu
 
 ---
 
-## 17. Conclusão e Próximos Passos
+## 17. Premissas
+
+As premissas são condições assumidas como verdadeiras para o sucesso operacional do DataHunter. Caso deixem de ser válidas, tornam-se riscos ou necessidades de mudança arquitetural.
+
+| ID | Premissa |
+| --- | --- |
+| **PR-01** | O usuário prioriza a qualidade e autoridade da fonte em relação à quantidade bruta de resultados. |
+| **PR-02** | O acesso à internet e às APIs de terceiros (Kaggle, Groq) é estável o suficiente para a operação. |
+| **PR-03** | O sistema operará primariamente em ambiente local ou servidores controlados (local-first). |
+| **PR-04** | O PKGL será o orquestrador parceiro principal para consumo de sinais de confronto. |
+| **PR-05** | Modelos de linguagem de alta performance (Llama 3) continuarão disponíveis via API de baixa latência (Groq). |
+
+---
+
+## 18. Restrições
+
+As restrições são limites técnicos e operacionais que moldam o design do sistema e não devem ser violadas sem revisão formal de arquitetura.
+
+| ID | Restrição |
+| --- | --- |
+| **RT-01** | O sistema não deve realizar o download de arquivos com extensões executáveis (.exe, .sh, .bin). |
+| **RT-02** | O volume máximo de captura por arquivo individual é de 80MB para preservar recursos de rede e disco. |
+| **RT-03** | A busca Web está restrita às políticas de crawling e rate limits do DuckDuckGo e sites de destino. |
+| **RT-04** | O sistema não deve persistir dados sensíveis ou segredos fora de variáveis de ambiente. |
+| **RT-05** | A interface inicial deve ser mantida em Streamlit para facilitar a prototipação e uso acadêmico. |
+
+---
+
+## 19. Critérios de Sucesso do MVP
+
+O sucesso do DataHunter na fase de Baseline Operacional será medido pelos seguintes critérios:
+
+| ID | Critério | Meta Inicial |
+| --- | --- | --- |
+| **CS-01** | **Eficácia de Descoberta** | Pelo menos 1 fonte de alta autoridade (.gov, .edu ou Zenodo) em 80% das buscas técnicas. |
+| **CS-02** | **Latência de Resposta** | Ranking inicial gerado em menos de 60 segundos para demandas de complexidade média. |
+| **CS-03** | **Qualidade Semântica** | Score de relevância superior a 0.7 para os 3 primeiros itens do ranking (validação humana). |
+| **CS-04** | **Interoperabilidade** | Sucesso na geração e envio de payload JSON de confronto para o sistema PKGL. |
+| **CS-05** | **Integridade de Dados** | Zero ocorrências de downloads corrompidos ou arquivos executáveis infiltrados. |
+
+---
+
+## 20. Roteiro Operacional (Roadmap)
+
+A evolução do DataHunter segue o amadurecimento da arquitetura de 8 camadas:
+
+1.  **Fase 1 - Baseline (Atual)**: Consolidação da busca Web + Kaggle, interface Streamlit e scoring semântico via Groq.
+2.  **Fase 2 - Expansão de Fontes**: Integração nativa com Hugging Face, Zenodo e portais governamentais específicos via conectores dedicados.
+3.  **Fase 3 - Sinais de Confronto**: Estabilização da API Headless para consumo automatizado pelo PKGL e motores de auditoria.
+4.  **Fase 4 - MCP & Agents**: Lançamento do DataHunter como um **Model Context Protocol (MCP) Server**, permitindo uso direto por IDEs (Cursor/VSCode) e agentes Claude/GPT.
+5.  **Fase 5 - Deep Scoring**: Implementação de análise interna de amostras de dados (inspeção de colunas e estatísticas) para score de fidelidade.
+
+---
+
+## 21. Questões Abertas e Decisões Pendentes
+
+| ID | Questão | Impacto |
+| --- | --- | --- |
+| **Q-01** | Qual o melhor modelo de persistência para caches de datasets de longo prazo? | Afeta a camada de Dados e o custo de storage. |
+| **Q-02** | Suporte a modelos locais (Ollama) para qualificação em ambientes air-gapped. | Afeta a premissa de soberania total (Segurança). |
+| **Q-03** | Implementação de agentes de "deep research" que navegam em múltiplas camadas de links. | Afeta a latência e o risco de bloqueio de IP. |
+
+---
+
+## 22. Conclusão
+
+O DataHunter preenche uma lacuna crítica na governança de sistemas de IA: a conexão confiável entre a necessidade de conhecimento e a descoberta de evidências externas. Ao transformar a busca manual e dispersa de dados em um pipeline agêntico, governado e qualificado, o sistema não apenas acelera a pesquisa técnica, mas fortalece a soberania cognitiva do usuário através do confronto sistemático de informações. 
+
+A baseline operacional estabelecida neste CONOPS garante que o DataHunter nasça com rastreabilidade, segurança e um propósito claro: **caçar dados para proteger e expandir a verdade operacional.**
+
+---
+
+## Rastreabilidade Documental do CONOPS
+
+| Item do CONOPS | Documento de Detalhamento |
+| --- | --- |
+| 1-7 (Visão e Contexto) | `README.md` |
+| 8-9 (Multiagentes e Orquestrador) | `docs/03-arquitetura/ARCHITECTURE.md` |
+| 10-11 (Integrações) | `docs/09-integracoes/CONTRACTS.md` |
+| 12-13 (Casos e Cenários) | `docs/07-llmops/avaliacao/TEST_PLANS.md` |
+| 14-15 (Gestão e Requisitos) | `docs/02-requisitos/SRS.md` |
+| 16 (Segurança) | `docs/08-seguranca-lgpd/CONTROLS.md` |
+
+---
+
+## Histórico de Versões
+
+| Versão | Data | Autor | Descrição |
+| --- | --- | --- | --- |
+| 0.1 | 2026-05-05 | Antigravity | Estrutura inicial e migração para pastas AIT. |
+| 1.0 | 2026-05-05 | Antigravity | Baseline completa (Items 1-22) alinhada ao PKGL e AIT-Template. |
