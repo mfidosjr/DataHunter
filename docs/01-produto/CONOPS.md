@@ -708,17 +708,54 @@ Restrições são limites obrigatórios para a primeira entrega e para a evoluç
 
 ---
 
-## 19. Critérios de Sucesso do MVP
+## 19. Critérios de Sucesso da Solução
 
-O sucesso do DataHunter na fase de Baseline Operacional será medido pelos seguintes critérios:
+Os critérios de sucesso definem quando o DataHunter entrega valor real como uma solução de descoberta e curadoria governada, indo além da simples funcionalidade técnica. O MVP é a base de validação para os mecanismos essenciais de "caça" agêntica.
 
-| ID | Critério | Meta Inicial |
+### 19.1 Critérios de Prontidão do MVP
+
+| Critério | Meta Inicial Sugerida | Evidência |
 | --- | --- | --- |
-| **CS-01** | **Eficácia de Descoberta** | Pelo menos 1 fonte de alta autoridade (.gov, .edu ou Zenodo) em 80% das buscas técnicas. |
-| **CS-02** | **Latência de Resposta** | Ranking inicial gerado em menos de 60 segundos para demandas de complexidade média. |
-| **CS-03** | **Qualidade Semântica** | Score de relevância superior a 0.7 para os 3 primeiros itens do ranking (validação humana). |
-| **CS-04** | **Interoperabilidade** | Sucesso na geração e envio de payload JSON de confronto para o sistema PKGL. |
-| **CS-05** | **Integridade de Dados** | Zero ocorrências de downloads corrompidos ou arquivos executáveis infiltrados. |
+| **Operação Local-first** | Execução completa em ambiente local sem dependência de persistência cloud. | Logs de execução e banco SQLite populado localmente. |
+| **Descoberta Multi-fonte** | Integração funcional de Web (DDG) e pelo menos uma API técnica (Kaggle/HF). | Ranking consolidado com achados de origens distintas. |
+| **Orquestração Agêntica** | Uso de Sistema 1 e 2 para expansão semântica e qualificação. | Trace ID registrando as variantes de busca e scores atribuídos. |
+| **Handoff Sistêmico** | Geração de payload JSON no formato de "Sinais de Confronto". | Arquivo ou endpoint JSON validado pelo esquema do PKGL. |
+
+### 19.2 Critérios de Sucesso Operacional
+
+| Critério | Meta Inicial Sugerida | Evidência |
+| --- | --- | --- |
+| **Eficácia de Recall** | Presença de fontes de alta autoridade (.gov, .edu, Zenodo) em 80% das buscas. | Relatório de fontes por categoria de autoridade. |
+| **Latência de Ranking** | Tempo total de geração de ranking qualificado inferior a 60 segundos. | Métricas de latência registradas por Trace ID. |
+| **Precisão Semântica** | Score de relevância superior a 0.7 para o Top 3 (validação humana). | Logs de qualificação com justificativa textual da IA. |
+| **Resiliência de Captura** | Taxa de sucesso em downloads e extração de metadados superior a 90%. | Relatório de erros e retries dos conectores. |
+
+### 19.3 Critérios de Maturidade e Governança
+
+| Critério | Meta Inicial Sugerida | Evidência |
+| --- | --- | --- |
+| **Monitoramento de KPIs** | Dashboard ou CLI exibindo Latência, Recall e Consumo de Tokens. | Interface de operação com indicadores ativos. |
+| **Rastreabilidade Total** | 100% dos achados vinculados a uma URL de proveniência e Trace ID. | Consulta auditável no banco de dados SQLite. |
+| **Conformidade de Licença** | Detecção e sinalização automática de licenças em 70% dos datasets capturados. | Campo de licença preenchido nos metadados do ranking. |
+| **Governança Documental** | Sincronia total entre CONOPS, SRS e matriz de riscos. | Matriz de rastreabilidade documental atualizada. |
+
+### 19.4 Critérios de Segurança e Conformidade
+
+| Critério | Meta Inicial Sugerida | Evidência |
+| --- | --- | --- |
+| **Proteção de Segredos** | Zero ocorrências de chaves de API em arquivos versionados ou logs. | Checklist de auditoria de segredos e varredura de repositório. |
+| **Filtro de Integridade** | 100% de bloqueio para extensões executáveis (.exe, .sh, .bin). | Logs de rejeição do conector de download. |
+| **Minimização de Dados** | Limpeza de caches temporários de download após 24h de inatividade. | Rotina de limpeza automática verificada. |
+| **Validação de Links** | 100% dos links reportados validados via HTTP HEAD para evitar alucinações. | Log de validação prévia ao ranking. |
+
+### 19.5 Critérios Bloqueantes
+
+A solução não deve ser considerada estável ou avançar para fases de maior automação se ocorrer uma ou mais das condições abaixo:
+*   Achados incluídos no ranking qualificado sem URL de proveniência verificável.
+*   Exposição de chaves de API (Groq, Kaggle, etc.) em qualquer artefato persistente ou log.
+*   Download de arquivos que excedam o teto de 80MB sem autorização explícita do usuário.
+*   Consolidação de rankings baseada em "alucinações" de modelos (links inexistentes gerados pela IA).
+*   Falha na geração de Sinais de Confronto que respeitem o contrato sistêmico com o PKGL.
 
 ---
 
